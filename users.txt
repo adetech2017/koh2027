@@ -1,0 +1,7 @@
+Seeded Staff Accounts:
+  admin@koh2027.com     / Admin@2027!      (role: admin)
+  editor@koh2027.com    / Editor@2027!     (role: editor)
+  moderator@koh2027.com / Mod@2027!        (role: moderator)
+
+
+   apply this design to gallery form too 
