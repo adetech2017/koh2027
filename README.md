@@ -1,58 +1,205 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# KOH 2027 Campaign Website
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-stack Laravel + Vue 3 web application for Kadri Obafemi Hamzat's political campaign.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This is a modern web platform featuring a public-facing website and a comprehensive admin content management system (CMS). Built with Laravel 11, Vue 3, Inertia.js, and Tailwind CSS.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend**: Laravel 11
+- **Frontend**: Vue 3 (Composition API)
+- **SSR/SPA Framework**: Inertia.js
+- **UI Framework**: Tailwind CSS
+- **Build Tool**: Vite
+- **Database**: MySQL
+- **Rich Text Editor**: Tiptap (MIT licensed)
+- **Authentication**: Laravel built-in auth with admin roles
 
-## Learning Laravel
+## Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Public Website
+- Hero slider with featured images
+- About page with dynamic content
+- Gallery with image categories and filtering
+- News/Articles section
+- Events management and RSVP
+- Platform/Pillars section highlighting key initiatives
+- Merchandise store
+- Downloadable materials
+- Contact form with admin notifications
+- Newsletter subscription
+- Volunteer registration
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Admin Panel
+- Role-based access control (Admin, Editor)
+- Dashboard with analytics
+- Content Management
+  - Hero slides management
+  - Gallery (multi-image upload with drag-and-drop)
+  - News articles with rich text editor
+  - Events management
+  - Platform pillars
+  - Merchandise with multiple images
+  - Testimonials
+  - Materials/Documents
+- CRM Features
+  - Contact tracking
+  - Volunteer management
+  - Newsletter subscriber management
+  - Activity logs
+  - Bulk email campaigns
+  - CSV export capabilities
+- User management with role assignment
+- Analytics and reporting
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Installation
 
-## Agentic Development
+### Prerequisites
+- PHP 8.3+
+- MySQL 8.0+
+- Node.js 18+
+- Composer
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Setup
 
 ```bash
-composer require laravel/boost --dev
+# Clone the repository
+git clone <repo-url>
+cd koh2027
 
-php artisan boost:install
+# Install dependencies
+composer install
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate app key
+php artisan key:generate
+
+# Run migrations and seed database
+php artisan migrate --seed
+
+# Build assets
+npm run build
+
+# Start dev server (in separate terminal)
+npm run dev
+
+# Start Laravel server
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Accessing the Application
+- **Public Site**: http://localhost:8000
+- **Admin Panel**: http://localhost:8000/admin/login
+- **Default Admin**: Email: `admin@example.com` | Password: `password`
+
+## Project Structure
+
+```
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Admin/          # Admin CMS controllers
+│   │   └── ...             # Public-facing controllers
+│   └── Models/             # Eloquent models
+├── resources/
+│   ├── js/
+│   │   ├── Components/     # Reusable Vue components
+│   │   ├── Layouts/        # Layout wrappers
+│   │   ├── Pages/          # Page components
+│   │   │   ├── Admin/      # Admin pages
+│   │   │   └── ...         # Public pages
+│   │   └── app.js          # Vue entry point
+│   └── css/
+├── routes/
+│   ├── web.php             # All routes
+│   └── api.php
+├── database/
+│   ├── migrations/         # Schema migrations
+│   └── seeders/            # Database seeders
+└── public/storage/         # User uploaded files
+```
+
+## Development
+
+### Running Development Server
+```bash
+# Terminal 1: Run Laravel dev server
+php artisan serve
+
+# Terminal 2: Run Vite dev server
+npm run dev
+```
+
+### Building for Production
+```bash
+npm run build
+```
+
+### Database Commands
+```bash
+# Run migrations
+php artisan migrate
+
+# Seed demo data
+php artisan db:seed
+
+# Reset database
+php artisan migrate:fresh --seed
+```
+
+## Key Components
+
+### Editor Component
+Rich text editor (Tiptap) with formatting toolbar:
+- Text formatting: Bold, Italic, Underline, Strikethrough
+- Headings (H1-H3)
+- Lists (Bullet, Ordered)
+- Blockquotes and code blocks
+- Undo/Redo
+
+### Gallery System
+- Multi-image upload with drag-and-drop
+- Category-based organization
+- Edit and delete functionality
+- Image storage in public disk
+
+### News System
+- Create/edit articles with rich text content
+- Featured image support
+- Category organization
+- Publish/archive functionality
+
+### Form Validation
+- Server-side validation with Laravel
+- Client-side error handling with Inertia
+- User-friendly error messages
+
+## Security
+
+- CSRF protection on all forms
+- Authorization gates for admin actions
+- Role-based access control
+- SQL injection prevention via Eloquent ORM
+- XSS protection via Vue templating
+- Secure file upload handling
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+When adding new features:
+1. Create database migration if needed
+2. Add corresponding model and controller
+3. Create Vue components for UI
+4. Add routes in `routes/web.php`
+5. Test thoroughly in both dev and production modes
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software for the KOH 2027 campaign.
+
+## Support
+
+For issues or questions, contact the development team.
