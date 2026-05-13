@@ -66,18 +66,6 @@
                   <p v-if="form.errors.cta_text" class="text-red-600 text-sm mt-1">{{ form.errors.cta_text }}</p>
                 </div>
 
-                <!-- CTA URL -->
-                <div>
-                  <label class="block text-sm font-medium text-dark mb-2">CTA URL (Optional)</label>
-                  <input
-                    v-model="form.cta_url"
-                    type="text"
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="https://... or /path"
-                  />
-                  <p v-if="form.errors.cta_url" class="text-red-600 text-sm mt-1">{{ form.errors.cta_url }}</p>
-                </div>
-
                 <!-- CTA Style -->
                 <div>
                   <label class="block text-sm font-medium text-dark mb-2">CTA Style</label>
@@ -161,17 +149,6 @@
               </div>
             </div>
 
-            <!-- Image Alt Text -->
-            <div class="mt-6">
-              <label class="block text-sm font-medium text-dark mb-2">Image Alt Text</label>
-              <input
-                v-model="form.image_alt"
-                type="text"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                placeholder="Descriptive alt text for accessibility"
-              />
-              <p v-if="form.errors.image_alt" class="text-red-600 text-sm mt-1">{{ form.errors.image_alt }}</p>
-            </div>
           </div>
 
           <!-- Buttons (Full Width) -->
@@ -210,10 +187,8 @@ const form = useForm({
   headline: '',
   subtitle: '',
   cta_text: '',
-  cta_url: '',
   cta_style: 'primary',
   image_path: null,
-  image_alt: '',
   is_active: true,
   sort_order: 0,
 })

@@ -47,6 +47,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 Route::post('/admin/logout', [AdminLoginController::class, 'destroy'])->middleware('auth')->name('admin.logout');
 
+// Alias for default Laravel login route (used by auth middleware)
+Route::redirect('/login', '/admin/login')->name('login');
+
 // Admin panel (protected routes)
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');

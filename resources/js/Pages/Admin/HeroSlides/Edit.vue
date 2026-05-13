@@ -66,18 +66,6 @@
                   <p v-if="form.errors.cta_text" class="text-red-600 text-sm mt-1">{{ form.errors.cta_text }}</p>
                 </div>
 
-                <!-- CTA URL -->
-                <div>
-                  <label class="block text-sm font-medium text-dark mb-2">CTA URL (Optional)</label>
-                  <input
-                    v-model="form.cta_url"
-                    type="text"
-                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="https://... or /path"
-                  />
-                  <p v-if="form.errors.cta_url" class="text-red-600 text-sm mt-1">{{ form.errors.cta_url }}</p>
-                </div>
-
                 <!-- CTA Style -->
                 <div>
                   <label class="block text-sm font-medium text-dark mb-2">CTA Style</label>
@@ -161,17 +149,6 @@
               </div>
             </div>
 
-            <!-- Image Alt Text -->
-            <div class="mt-6">
-              <label class="block text-sm font-medium text-dark mb-2">Image Alt Text</label>
-              <input
-                v-model="form.image_alt"
-                type="text"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                placeholder="Descriptive alt text for accessibility"
-              />
-              <p v-if="form.errors.image_alt" class="text-red-600 text-sm mt-1">{{ form.errors.image_alt }}</p>
-            </div>
           </div>
 
           <!-- Buttons (Full Width) -->
@@ -213,10 +190,8 @@ const form = useForm({
   headline: '',
   subtitle: '',
   cta_text: '',
-  cta_url: '',
   cta_style: 'primary',
   image_path: null,
-  image_alt: '',
   is_active: false,
   sort_order: 0,
 })
@@ -227,9 +202,7 @@ watch(slide, (newSlide) => {
     form.headline = newSlide.headline || ''
     form.subtitle = newSlide.subtitle || ''
     form.cta_text = newSlide.cta_text || ''
-    form.cta_url = newSlide.cta_url || ''
     form.cta_style = newSlide.cta_style || 'primary'
-    form.image_alt = newSlide.image_alt || ''
     form.is_active = newSlide.is_active || false
     form.sort_order = newSlide.sort_order || 0
 
@@ -253,6 +226,20 @@ const handleImageUpload = (e) => {
 }
 
 const submitForm = () => {
+  // Ensure required fields are filled (use original slide data if form is empty)
+  const finalForm = {
+    ...form.data(),
+    tagline: form.tagline || slide.value.tagline || '',
+    headline: form.headline || slide.value.headline || '',
+    subtitle: form.subtitle || slide.value.subtitle || '',
+    sort_order: form.sort_order ?? slide.value.sort_order ?? 0,
+  }
+
+  // Clear the form and repopulate with final data to ensure submission
+  Object.keys(finalForm).forEach(key => {
+    form[key] = finalForm[key]
+  })
+
   form.put(`/admin/hero-slides/${slide.value.id}`, {
     onSuccess: () => {
       // Success - page redirects automatically

@@ -37,10 +37,8 @@ class HeroSlideController extends Controller
             'headline' => ['required', 'string', 'max:200'],
             'subtitle' => ['required', 'string', 'max:300'],
             'cta_text' => ['nullable', 'string', 'max:50'],
-            'cta_url' => ['nullable', 'string', 'max:500'],
             'cta_style' => ['nullable', 'in:primary,secondary'],
             'image_path' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            'image_alt' => ['required', 'string', 'max:200'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer'],
         ]);
@@ -71,10 +69,8 @@ class HeroSlideController extends Controller
             'headline' => ['required', 'string', 'max:200'],
             'subtitle' => ['required', 'string', 'max:300'],
             'cta_text' => ['nullable', 'string', 'max:50'],
-            'cta_url' => ['nullable', 'string', 'max:500'],
             'cta_style' => ['nullable', 'in:primary,secondary'],
             'image_path' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            'image_alt' => ['required', 'string', 'max:200'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer'],
         ]);
