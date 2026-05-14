@@ -26,7 +26,7 @@
           <h3 class="font-semibold mb-4">Contact</h3>
           <ul class="space-y-2 text-gray-300 text-sm">
             <li>Lagos State, Nigeria</li>
-            <li><a href="mailto:campaign@kohforlakosstate.com" class="hover:text-gold transition-colors">campaign@kohforlakosstate.com</a></li>
+            <li><a href="mailto:campaign@kohforlagosstate.com" class="hover:text-gold transition-colors">campaign@kohforlagosstate.com</a></li>
             <li>+234 (0) XXX XXX XXXX</li>
           </ul>
         </div>
