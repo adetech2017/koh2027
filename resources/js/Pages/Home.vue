@@ -152,8 +152,8 @@
         <h2 class="text-3xl md:text-4xl font-bold mb-6">Join the Movement</h2>
         <p class="text-lg text-gray-100 mb-12 max-w-2xl mx-auto">Be part of building a better Lagos. Subscribe to our newsletter, volunteer, or donate to support the campaign.</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <button class="btn-gold">Volunteer</button>
-          <button class="btn-secondary bg-white text-primary hover:bg-gray-100">Donate</button>
+          <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-gold">Volunteer</a>
+          <a href="https://hamzatforlagos.com/register-voter" target="_blank" rel="noopener noreferrer" class="btn-secondary bg-white text-primary hover:bg-gray-100">Voter Registration</a>
         </div>
         <form @submit.prevent="subscribeNewsletterHome" class="max-w-md mx-auto">
           <div class="flex gap-2">

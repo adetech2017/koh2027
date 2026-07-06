@@ -24,8 +24,8 @@
 
         <!-- Right Actions -->
         <div class="hidden md:flex items-center space-x-4">
-          <button class="btn-secondary text-sm">Volunteer</button>
-          <button class="btn-primary text-sm">Donate</button>
+          <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-secondary text-sm">Volunteer</a>
+          <a href="https://hamzatforlagos.com/register-voter" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">Voter Registration</a>
         </div>
 
         <!-- Mobile Menu Toggle -->
@@ -50,8 +50,8 @@
         <Link href="/merchandise" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Merchandise</Link>
         <Link href="/contact" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Contact</Link>
         <div class="flex flex-col space-y-2 pt-2">
-          <button class="btn-secondary w-full text-sm">Volunteer</button>
-          <button class="btn-primary w-full text-sm">Donate</button>
+          <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-sm text-center">Volunteer</a>
+          <a href="https://hamzatforlagos.com/register-voter" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-sm text-center">Voter Registration</a>
         </div>
       </div>
     </div>
