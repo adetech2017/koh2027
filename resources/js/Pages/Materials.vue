@@ -4,7 +4,7 @@
     <div class="min-h-screen bg-white">
       <div class="bg-primary text-white py-12 md:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 class="text-4xl md:text-5xl font-bold mb-4">Campaign Materials</h1>
+          <h1 class="text-4xl md:text-5xl font-bold mb-4">Manifesto</h1>
           <p class="text-xl text-gray-200">Download brochures, policies, and campaign resources</p>
         </div>
       </div>

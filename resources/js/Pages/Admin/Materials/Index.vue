@@ -6,7 +6,7 @@
     <div class="space-y-6">
       <!-- Header with Create Button -->
       <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-dark">Campaign Materials</h2>
+        <h2 class="text-2xl font-bold text-dark">Manifesto</h2>
         <button
           @click="createNew"
           class="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors"

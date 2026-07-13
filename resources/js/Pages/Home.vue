@@ -174,7 +174,7 @@
     <section class="py-16 md:py-24 bg-light-gray">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Campaign Materials</h2>
+          <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Manifesto</h2>
           <p class="text-body mb-8">Download brochures, policy documents, and campaign graphics</p>
           <Link href="/materials" class="btn-primary">Access All Materials</Link>
         </div>
