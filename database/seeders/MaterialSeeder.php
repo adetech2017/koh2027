@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Material;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -10,6 +11,9 @@ class MaterialSeeder extends Seeder
     /**
      * Run the database seeds.
      *
+     * Resets the materials table before reseeding, so this is safe to
+     * re-run on an environment that already has old/duplicate rows.
+     *
      * Note: this only creates the database rows. The actual PDF files must
      * exist under storage/app/private/materials/ (upload them via
      * Admin > Materials on this environment) — without them, downloads
@@ -17,6 +21,8 @@ class MaterialSeeder extends Seeder
      */
     public function run(): void
     {
+        Material::query()->delete();
+
         $materials = [
             [
                 'title' => 'Full Campaign Manifesto 2027',
