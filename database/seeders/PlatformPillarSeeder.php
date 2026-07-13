@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\PlatformPillar;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -9,9 +10,14 @@ class PlatformPillarSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * Resets the platform_pillars table before reseeding, so this is safe
+     * to re-run on an environment that already has old placeholder rows.
      */
     public function run(): void
     {
+        PlatformPillar::truncate();
+
         $pillars = [
             [
                 'title' => 'People First',
