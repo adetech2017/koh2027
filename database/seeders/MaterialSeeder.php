@@ -21,7 +21,7 @@ class MaterialSeeder extends Seeder
      */
     public function run(): void
     {
-        Material::query()->delete();
+        Material::truncate();
 
         $materials = [
             [
