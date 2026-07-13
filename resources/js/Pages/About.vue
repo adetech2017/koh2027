@@ -10,8 +10,8 @@
       </div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-24">
-          <div class="h-96 bg-light-gray rounded-lg overflow-hidden flex items-center justify-center text-gray-400">
-            <img :src="imageUrl" alt="Kadri Obafemi Hamzat" class="w-full h-full object-cover" />
+          <div class="h-96 bg-light-gray rounded-lg overflow-hidden flex items-center justify-center">
+            <img :src="imageUrl" alt="Kadri Obafemi Hamzat" class="w-full h-full object-contain" />
           </div>
           <div>
             <h2 class="text-3xl font-bold text-dark mb-6">A Leader Committed to Lagos</h2>
@@ -22,9 +22,15 @@
         </div>
 
         <div>
-          <h2 class="text-3xl font-bold text-dark mb-12 text-center">Core Values & Platforms</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center max-w-2xl mx-auto mb-12">
+            <h2 class="text-3xl font-bold text-dark mb-3">Core Values & Platforms</h2>
+            <p class="text-body">Seven pillars guide every commitment in the Lagos Promise &mdash; each one grounded in the same core values.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <PlatformCard v-for="pillar in pillars" :key="pillar.id" :pillar="pillar" />
+          </div>
+          <div class="text-center mt-12">
+            <Link href="/platforms" class="btn-secondary">View the Full Platform Details</Link>
           </div>
         </div>
       </div>
@@ -33,7 +39,7 @@
 </template>
 
 <script setup>
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import PlatformCard from '@/Components/PlatformCard.vue'
 

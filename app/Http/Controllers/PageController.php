@@ -11,7 +11,7 @@ class PageController extends Controller
 {
     public function about(Request $request): Response
     {
-        $pillars = PlatformPillar::active()->get(['id', 'title', 'slug', 'summary']);
+        $pillars = PlatformPillar::active()->get(['id', 'title', 'slug', 'summary', 'icon', 'color']);
         return Inertia::render('About', compact('pillars'));
     }
 

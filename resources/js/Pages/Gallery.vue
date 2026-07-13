@@ -16,13 +16,13 @@
             <button v-for="cat in categories" :key="cat" @click="updateFilter(cat)" :class="['px-4 py-2 rounded transition-colors', filters.category === cat ? 'btn-primary' : 'border border-light-gray text-body hover:border-primary']">{{ cat }}</button>
           </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-          <div v-for="image in images.data" :key="image.id" class="h-48 bg-light-gray rounded-lg overflow-hidden cursor-pointer group" @click="openLightbox(image)">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 items-start">
+          <div v-for="image in images.data" :key="image.id" class="bg-light-gray rounded-lg overflow-hidden cursor-pointer group" @click="openLightbox(image)">
             <img
               v-if="image.image_url"
               :src="image.image_url"
               :alt="image.alt_text"
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform"
+              class="w-full h-auto block group-hover:scale-110 transition-transform"
             />
           </div>
         </div>

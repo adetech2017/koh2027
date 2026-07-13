@@ -14,11 +14,30 @@
         <div class="hidden md:flex items-center space-x-8">
           <Link href="/" :class="isActive('/') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Home</Link>
           <Link href="/about" :class="isActive('about') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">About</Link>
-          <Link href="/platforms" :class="isActive('platforms') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Platforms</Link>
-          <Link href="/gallery" :class="isActive('gallery') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Gallery</Link>
+
+          <!-- Platforms dropdown -->
+          <div class="relative" @mouseenter="platformsOpen = true" @mouseleave="platformsOpen = false">
+            <button
+              type="button"
+              class="flex items-center gap-1 focus:outline-none"
+              :class="isActive('platforms') || isActive('merchandise') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'"
+              @click="platformsOpen = !platformsOpen"
+            >
+              Platforms
+              <ChevronDownIcon class="w-4 h-4 transition-transform" :class="{ 'rotate-180': platformsOpen }" />
+            </button>
+            <div v-show="platformsOpen" class="absolute left-0 top-full pt-2 w-52">
+              <div class="bg-white rounded-lg shadow-card-hover border border-light-gray py-2">
+                <Link href="/platforms" class="block px-4 py-2 text-sm text-body hover:bg-light-blue hover:text-primary transition-colors">Our Platforms</Link>
+                <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue hover:text-primary transition-colors">Merchandise</Link>
+              </div>
+            </div>
+          </div>
+
+          <Link href="/materials" :class="isActive('materials') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Manifesto</Link>
           <Link href="/events" :class="isActive('events') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Events</Link>
           <Link href="/news" :class="isActive('news') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">News</Link>
-          <Link href="/merchandise" :class="isActive('merchandise') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Merchandise</Link>
+          <Link href="/gallery" :class="isActive('gallery') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Gallery</Link>
           <Link href="/contact" :class="isActive('contact') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Contact</Link>
         </div>
 
@@ -43,11 +62,25 @@
       <div v-if="mobileMenuOpen" class="md:hidden pb-4 space-y-2 border-t border-light-gray pt-4">
         <Link href="/" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Home</Link>
         <Link href="/about" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">About</Link>
-        <Link href="/platforms" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Platforms</Link>
-        <Link href="/gallery" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Gallery</Link>
+
+        <!-- Platforms expandable section -->
+        <button
+          type="button"
+          class="w-full flex items-center justify-between px-4 py-2 text-body hover:bg-light-blue rounded transition-colors"
+          @click="mobilePlatformsOpen = !mobilePlatformsOpen"
+        >
+          <span>Platforms</span>
+          <ChevronDownIcon class="w-4 h-4 transition-transform" :class="{ 'rotate-180': mobilePlatformsOpen }" />
+        </button>
+        <div v-if="mobilePlatformsOpen" class="pl-4 space-y-1">
+          <Link href="/platforms" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Our Platforms</Link>
+          <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Merchandise</Link>
+        </div>
+
+        <Link href="/materials" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Manifesto</Link>
         <Link href="/events" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Events</Link>
         <Link href="/news" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">News</Link>
-        <Link href="/merchandise" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Merchandise</Link>
+        <Link href="/gallery" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Gallery</Link>
         <Link href="/contact" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Contact</Link>
         <div class="flex flex-col space-y-2 pt-2">
           <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-sm text-center">Volunteer</a>
@@ -61,11 +94,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import { ChevronDownIcon } from '@heroicons/vue/24/outline'
 
 const page = usePage()
 
 const isScrolled = ref(false)
 const mobileMenuOpen = ref(false)
+const platformsOpen = ref(false)
+const mobilePlatformsOpen = ref(false)
 
 const currentPath = computed(() => {
   if (typeof window !== 'undefined') {

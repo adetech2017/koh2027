@@ -201,7 +201,7 @@ import SocialFeedsSection from '@/Components/SocialFeedsSection.vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay } from 'swiper/modules'
 
-const portraitImage = '/storage/personal/koh2.jpg'
+const portraitImage = '/storage/personal/koh-2027-4.jpeg'
 
 defineProps({
   heroSlides: Array,
