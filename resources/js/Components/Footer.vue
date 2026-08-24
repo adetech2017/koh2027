@@ -79,9 +79,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 
+const route = inject('route')
 const form = useForm({
   email: '',
   name: '',

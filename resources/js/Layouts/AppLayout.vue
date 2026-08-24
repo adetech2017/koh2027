@@ -6,6 +6,7 @@
       <slot />
     </main>
     <Footer />
+    <ManifestoChat />
   </div>
 </template>
 
@@ -13,4 +14,5 @@
 import Navigation from '@/Components/Navigation.vue'
 import Footer from '@/Components/Footer.vue'
 import FlashMessage from '@/Components/FlashMessage.vue'
+import ManifestoChat from '@/Components/ManifestoChat.vue'
 </script>

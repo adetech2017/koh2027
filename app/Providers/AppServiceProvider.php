@@ -42,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perHour(3)->by($request->ip());
         });
 
+        RateLimiter::for('manifesto-chat', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
         Gate::define('manage-content', fn ($user) => $user->canManageContent());
         Gate::define('delete-content', fn ($user) => $user->canDelete());
         Gate::define('manage-users', fn ($user) => $user->isAdmin());

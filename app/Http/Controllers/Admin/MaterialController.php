@@ -79,7 +79,9 @@ class MaterialController extends Controller
             'is_active' => ['boolean'],
         ]);
 
-        if ($request->hasFile('file_path')) {
+        $replacingFile = $request->hasFile('file_path');
+
+        if ($replacingFile) {
             Storage::disk('local')->delete($material->file_path);
 
             $file = $request->file('file_path');
@@ -101,6 +103,10 @@ class MaterialController extends Controller
         }
 
         $material->update($validated);
+
+        if ($replacingFile) {
+            $material->forceFill(['extracted_text' => null, 'extracted_at' => null])->save();
+        }
 
         return redirect()->route('admin.materials.index')->with('success', 'Material updated successfully.');
     }

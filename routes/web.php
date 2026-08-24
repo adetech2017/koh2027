@@ -6,6 +6,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ManifestoChatController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MerchandiseController;
 use App\Http\Controllers\NewsController;
@@ -27,6 +28,8 @@ Route::post('/events/{id}/rsvp', [EventController::class, 'rsvp'])->name('events
 
 Route::get('/news', [NewsController::class, 'index'])->name('news.index');
 Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
+
+Route::post('/manifesto-chat', [ManifestoChatController::class, 'respond'])->name('manifesto-chat')->middleware('throttle:manifesto-chat');
 
 Route::get('/materials', [MaterialController::class, 'index'])->name('materials.index');
 Route::get('/materials/{id}/download', [MaterialController::class, 'download'])->name('materials.download');
