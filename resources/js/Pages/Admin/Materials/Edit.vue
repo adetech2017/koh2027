@@ -220,7 +220,9 @@ const handleThumbnailUpload = (e) => {
 }
 
 const submitForm = () => {
-  form.put(`/admin/materials/${material.value.id}`, {
+  // PHP cannot parse multipart bodies on non-POST requests, so file uploads
+  // must go out as POST with a spoofed _method field rather than form.put().
+  form.transform((data) => ({ ...data, _method: 'put' })).post(`/admin/materials/${material.value.id}`, {
     onSuccess: () => {
       // Success - page redirects automatically
     },

@@ -240,7 +240,9 @@ const submitForm = () => {
     form[key] = finalForm[key]
   })
 
-  form.put(`/admin/hero-slides/${slide.value.id}`, {
+  // PHP cannot parse multipart bodies on non-POST requests, so file uploads
+  // must go out as POST with a spoofed _method field rather than form.put().
+  form.transform((data) => ({ ...data, _method: 'put' })).post(`/admin/hero-slides/${slide.value.id}`, {
     onSuccess: () => {
       // Success - page redirects automatically
     },

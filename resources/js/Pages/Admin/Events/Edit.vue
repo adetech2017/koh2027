@@ -267,8 +267,11 @@ const submitForm = () => {
       formData.append(key, form[key])
     }
   })
+  // PHP cannot parse multipart bodies on non-POST requests, so file uploads
+  // must go out as POST with a spoofed _method field rather than router.patch().
+  formData.append('_method', 'PATCH')
 
-  router.patch(`/admin/events/${event.id}`, formData, {
+  router.post(`/admin/events/${event.id}`, formData, {
     onError: (err) => {
       errors.value = err
     },

@@ -188,13 +188,8 @@ const deleteImage = (id) => {
 }
 
 const submitForm = () => {
-  console.log('[gallery-edit] submitting', {
-    category_id: form.category_id,
-    images_count: form.images.length,
-    image_id: image.value.id,
-  })
-  form.put(`/admin/gallery/${image.value.id}`, {
-    onError: (errors) => console.log('[gallery-edit] errors', errors),
-  })
+  // PHP cannot parse multipart bodies on non-POST requests, so file uploads
+  // must go out as POST with a spoofed _method field rather than form.put().
+  form.transform((data) => ({ ...data, _method: 'put' })).post(`/admin/gallery/${image.value.id}`)
 }
 </script>
