@@ -188,6 +188,13 @@ const deleteImage = (id) => {
 }
 
 const submitForm = () => {
-  form.put(`/admin/gallery/${image.value.id}`)
+  console.log('[gallery-edit] submitting', {
+    category_id: form.category_id,
+    images_count: form.images.length,
+    image_id: image.value.id,
+  })
+  form.put(`/admin/gallery/${image.value.id}`, {
+    onError: (errors) => console.log('[gallery-edit] errors', errors),
+  })
 }
 </script>
