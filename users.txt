@@ -5,3 +5,5 @@ Seeded Staff Accounts:
 
 
    apply this design to gallery form too
+
+php artisan manifesto:extract-text
