@@ -74,14 +74,25 @@
                 <div v-else class="w-full aspect-square rounded-lg shadow bg-gray-100 flex items-center justify-center text-gray-400 text-xs text-center px-2">
                   Image unavailable
                 </div>
-                <button
-                  type="button"
-                  @click="deleteImage(img.id)"
-                  class="absolute top-2 right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete"
-                >
-                  🗑️
-                </button>
+                <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    @click="toggleFeatured(img)"
+                    class="p-1 rounded text-white"
+                    :class="img.is_featured ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-600 hover:bg-gray-700'"
+                    :title="img.is_featured ? 'Remove from homepage gallery' : 'Show on homepage gallery'"
+                  >
+                    {{ img.is_featured ? '★' : '☆' }}
+                  </button>
+                  <button
+                    type="button"
+                    @click="deleteImage(img.id)"
+                    class="p-1 bg-red-600 hover:bg-red-700 text-white rounded"
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -185,6 +196,10 @@ const deleteImage = (id) => {
   if (confirm('Delete this image?')) {
     router.delete(`/admin/gallery/${id}`)
   }
+}
+
+const toggleFeatured = (img) => {
+  router.patch(`/admin/gallery/${img.id}/toggle-featured`, {}, { preserveScroll: true })
 }
 
 const submitForm = () => {

@@ -99,6 +99,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('merchandise/images/{image}/set-primary', [Admin\MerchandiseImageController::class, 'setPrimary'])->name('merchandise.images.set-primary');
         Route::resource('testimonials', Admin\TestimonialController::class);
         Route::resource('gallery', Admin\GalleryController::class);
+        Route::patch('gallery/{gallery}/toggle-featured', [Admin\GalleryController::class, 'toggleFeatured'])->name('gallery.toggle-featured');
         Route::post('gallery-categories', [Admin\ImageCategoryController::class, 'store'])->name('gallery-categories.store');
     });
 

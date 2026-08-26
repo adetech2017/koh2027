@@ -107,6 +107,15 @@ class GalleryController extends Controller
         return redirect()->route('admin.gallery.index')->with('success', 'Gallery updated successfully.');
     }
 
+    public function toggleFeatured(GalleryImage $gallery): RedirectResponse
+    {
+        Gate::authorize('manage-content');
+
+        $gallery->update(['is_featured' => !$gallery->is_featured]);
+
+        return back();
+    }
+
     public function destroy(GalleryImage $gallery): RedirectResponse
     {
         Gate::authorize('delete-content');
