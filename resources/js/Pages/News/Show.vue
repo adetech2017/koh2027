@@ -23,8 +23,8 @@
           <p class="text-xl text-body">{{ article.excerpt }}</p>
           <p class="text-body mt-4">By {{ article.author_name }}</p>
         </header>
-        <figure v-if="article.image_url" class="mb-8">
-          <img :src="article.image_url" :alt="article.image_alt" class="w-full rounded-lg" />
+        <figure v-if="article.image_url && !imageFailed" class="mb-8">
+          <img :src="article.image_url" :alt="article.image_alt" class="w-full rounded-lg" @error="imageFailed = true" />
         </figure>
         <div class="prose max-w-none mb-12">
           <p v-html="article.body" class="text-body leading-relaxed"></p>
@@ -44,13 +44,14 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Head, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import NewsCard from '@/Components/NewsCard.vue'
 import ShareButtons from '@/Components/ShareButtons.vue'
 
 const page = usePage()
+const imageFailed = ref(false)
 
 const props = defineProps({
   article: Object,

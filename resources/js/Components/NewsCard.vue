@@ -3,10 +3,11 @@
     <div class="bg-white rounded-lg overflow-hidden shadow-card hover:shadow-card-hover transition-all h-full flex flex-col">
       <div class="relative h-48 bg-light-gray overflow-hidden">
         <img
-          v-if="article.image_url"
+          v-if="article.image_url && !imageFailed"
           :src="article.image_url"
           :alt="article.image_alt"
           class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          @error="imageFailed = true"
         />
         <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
           <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,6 +31,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
 defineProps({
@@ -38,6 +40,8 @@ defineProps({
     required: true,
   },
 })
+
+const imageFailed = ref(false)
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
