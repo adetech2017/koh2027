@@ -5,11 +5,13 @@
         <Link href="/admin/gallery" class="text-primary hover:text-primary-dark mb-4 inline-block">
           ← Back to Gallery
         </Link>
-        <h2 class="text-2xl font-bold text-dark">Gallery: {{ image.category }}</h2>
+        <h2 class="text-2xl font-bold text-dark">Gallery: {{ image.category?.name }}</h2>
       </div>
 
-      <div class="bg-white rounded-lg shadow p-6 space-y-8">
-        <form @submit.prevent="submitForm" class="space-y-8">
+      <form @submit.prevent="submitForm" class="bg-white rounded-lg shadow p-6 flex flex-col md:flex-row gap-8">
+        <GalleryCategoryPicker v-model="form.category_id" :categories="categories" />
+
+        <div class="flex-grow space-y-8 min-w-0">
           <!-- Dropzone -->
           <div
             @drop.prevent="handleDrop"
@@ -62,7 +64,16 @@
             <h3 class="text-lg font-semibold text-dark mb-4">Gallery Images ({{ galleryImages.length }})</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div v-for="img in galleryImages" :key="img.id" class="relative group">
-                <img :src="getImageUrl(img.image_path)" :alt="img.title" class="w-full aspect-square object-cover rounded-lg shadow" />
+                <img
+                  v-if="!failedImages.has(img.id)"
+                  :src="getImageUrl(img.image_path)"
+                  :alt="img.title"
+                  class="w-full aspect-square object-cover rounded-lg shadow"
+                  @error="failedImages.add(img.id)"
+                />
+                <div v-else class="w-full aspect-square rounded-lg shadow bg-gray-100 flex items-center justify-center text-gray-400 text-xs text-center px-2">
+                  Image unavailable
+                </div>
                 <button
                   type="button"
                   @click="deleteImage(img.id)"
@@ -75,39 +86,27 @@
             </div>
           </div>
 
-          <!-- Category Form -->
-          <div class="max-w-md space-y-6 border-t pt-8">
-            <div>
-              <label class="block text-sm font-medium text-dark mb-2">Category</label>
-              <input
-                v-model="form.category"
-                type="text"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="e.g., Event, Team, Activity"
-              />
-              <p v-if="form.errors.category" class="text-red-600 text-sm mt-1">{{ form.errors.category }}</p>
-            </div>
+          <p v-if="form.errors.category_id" class="text-red-600 text-sm">{{ form.errors.category_id }}</p>
 
-            <!-- Buttons -->
-            <div class="flex gap-4 pt-4 border-t">
-              <button
-                type="submit"
-                :disabled="form.processing"
-                class="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <span v-if="form.processing" class="inline-block animate-spin">⟳</span>
-                {{ form.processing ? 'Saving...' : 'Save Changes' }}
-              </button>
-              <Link
-                href="/admin/gallery"
-                class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg font-medium transition-colors"
-              >
-                Cancel
-              </Link>
-            </div>
+          <!-- Buttons -->
+          <div class="flex gap-4 pt-4 border-t">
+            <button
+              type="submit"
+              :disabled="form.processing || !form.category_id"
+              class="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <span v-if="form.processing" class="inline-block animate-spin">⟳</span>
+              {{ form.processing ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <Link
+              href="/admin/gallery"
+              class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-dark rounded-lg font-medium transition-colors"
+            >
+              Cancel
+            </Link>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </AdminLayout>
 </template>
@@ -116,23 +115,32 @@
 import { ref, computed, watch } from 'vue'
 import { usePage, useForm, Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import GalleryCategoryPicker from '@/Components/GalleryCategoryPicker.vue'
+
+defineProps({
+  categories: {
+    type: Array,
+    default: () => [],
+  },
+})
 
 const page = usePage()
 const fileInput = ref(null)
 const isDragging = ref(false)
 const newPreviews = ref([])
+const failedImages = ref(new Set())
 
 const image = computed(() => page.props.image || {})
 const galleryImages = computed(() => page.props.galleryImages || [])
 
 const form = useForm({
   images: [],
-  category: '',
+  category_id: null,
 })
 
 watch(image, (newImage) => {
   if (newImage && newImage.id) {
-    form.category = newImage.category || ''
+    form.category_id = newImage.category_id || null
   }
 }, { immediate: true, deep: true })
 

@@ -19,11 +19,15 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 items-start">
           <div v-for="image in images.data" :key="image.id" class="bg-light-gray rounded-lg overflow-hidden cursor-pointer group" @click="openLightbox(image)">
             <img
-              v-if="image.image_url"
+              v-if="image.image_url && !failedImages.has(image.id)"
               :src="image.image_url"
               :alt="image.alt_text"
               class="w-full h-auto block group-hover:scale-110 transition-transform"
+              @error="failedImages.add(image.id)"
             />
+            <div v-else class="w-full aspect-square flex items-center justify-center text-gray-400 text-xs">
+              Image unavailable
+            </div>
           </div>
         </div>
         <Pagination :links="images.links" />
@@ -33,6 +37,7 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
@@ -42,6 +47,8 @@ defineProps({
   filters: Object,
   categories: Array,
 })
+
+const failedImages = ref(new Set())
 
 const updateFilter = (category) => {
   router.visit('/gallery', {

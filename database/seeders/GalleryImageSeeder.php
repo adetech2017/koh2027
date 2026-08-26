@@ -86,7 +86,12 @@ class GalleryImageSeeder extends Seeder
         ];
 
         foreach ($images as $image) {
-            \App\Models\GalleryImage::create(array_merge($image, ['is_active' => true]));
+            $category = \App\Models\ImageCategory::firstOrCreate(['name' => $image['category']]);
+
+            \App\Models\GalleryImage::create(array_merge(
+                collect($image)->except('category')->all(),
+                ['category_id' => $category->id, 'is_active' => true]
+            ));
         }
     }
 }

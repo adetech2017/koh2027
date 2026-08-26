@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GalleryImage;
+use App\Models\ImageCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -14,16 +15,21 @@ class GalleryController extends Controller
 {
     public function index(): Response
     {
-        $images = GalleryImage::orderBy('sort_order')->paginate(24);
+        $categories = ImageCategory::with(['galleryImages' => fn ($query) => $query->orderBy('sort_order')])
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('Admin/Gallery/Index', [
-            'images' => $images,
+            'categories' => $categories,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Admin/Gallery/Create');
+        return Inertia::render('Admin/Gallery/Create', [
+            'categories' => $this->categoryList(),
+            'selectedCategoryId' => $request->integer('category_id') ?: null,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -33,7 +39,7 @@ class GalleryController extends Controller
         $validated = $request->validate([
             'images' => ['required', 'array', 'min:1'],
             'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            'category' => ['required', 'string', 'max:100'],
+            'category_id' => ['required', 'integer', 'exists:image_categories,id'],
         ]);
 
         $uploadedCount = 0;
@@ -44,7 +50,7 @@ class GalleryController extends Controller
                     'title' => $file->getClientOriginalName(),
                     'alt_text' => $file->getClientOriginalName(),
                     'image_path' => $path,
-                    'category' => $validated['category'],
+                    'category_id' => $validated['category_id'],
                     'sort_order' => $index,
                 ]);
                 $uploadedCount++;
@@ -56,12 +62,20 @@ class GalleryController extends Controller
 
     public function edit(GalleryImage $gallery): Response
     {
-        $galleryImages = GalleryImage::where('category', $gallery->category)->orderBy('sort_order')->get();
+        $gallery->load('category');
+
+        $galleryImages = GalleryImage::where('category_id', $gallery->category_id)->orderBy('sort_order')->get();
 
         return Inertia::render('Admin/Gallery/Edit', [
             'image' => [...$gallery->toArray(), 'image_url' => $gallery->image_url],
             'galleryImages' => $galleryImages,
+            'categories' => $this->categoryList(),
         ]);
+    }
+
+    private function categoryList()
+    {
+        return ImageCategory::withCount('galleryImages')->orderBy('name')->get();
     }
 
     public function update(Request $request, GalleryImage $gallery): RedirectResponse
@@ -71,20 +85,20 @@ class GalleryController extends Controller
         $validated = $request->validate([
             'images' => ['nullable', 'array'],
             'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
-            'category' => ['required', 'string', 'max:100'],
+            'category_id' => ['required', 'integer', 'exists:image_categories,id'],
         ]);
 
-        $gallery->update(['category' => $validated['category']]);
+        $gallery->update(['category_id' => $validated['category_id']]);
 
         if ($request->hasFile('images')) {
-            $maxSort = GalleryImage::where('category', $validated['category'])->max('sort_order') ?? 0;
+            $maxSort = GalleryImage::where('category_id', $validated['category_id'])->max('sort_order') ?? 0;
             foreach ($request->file('images') as $index => $file) {
                 $path = $file->store('gallery', 'public');
                 GalleryImage::create([
                     'title' => $file->getClientOriginalName(),
                     'alt_text' => $file->getClientOriginalName(),
                     'image_path' => $path,
-                    'category' => $validated['category'],
+                    'category_id' => $validated['category_id'],
                     'sort_order' => $maxSort + $index + 1,
                 ]);
             }
