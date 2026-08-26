@@ -34,7 +34,7 @@
         placeholder="Category name"
         class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         :disabled="creating"
-        @keyup.enter="confirmNewCategory"
+        @keydown.enter.prevent="confirmNewCategory"
       />
       <p v-if="createError" class="text-red-600 text-xs">{{ createError }}</p>
       <div class="flex gap-2">
