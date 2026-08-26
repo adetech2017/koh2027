@@ -34,8 +34,13 @@
             :class="m.role === 'user' ? 'justify-end' : 'justify-start'"
           >
             <div
-              class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-              :class="m.role === 'user' ? 'bg-primary text-white rounded-br-sm' : 'bg-white border border-light-gray text-body rounded-bl-sm'"
+              v-if="m.role === 'assistant'"
+              class="max-w-[85%] rounded-lg rounded-bl-sm px-3 py-2 text-sm bg-white border border-light-gray text-body chat-markdown"
+              v-html="renderMarkdown(m.content)"
+            />
+            <div
+              v-else
+              class="max-w-[85%] rounded-lg rounded-br-sm px-3 py-2 text-sm whitespace-pre-wrap bg-primary text-white"
             >
               {{ m.content }}
             </div>
@@ -83,6 +88,14 @@
 <script setup>
 import { inject, ref, nextTick } from 'vue'
 import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+
+marked.setOptions({ breaks: true })
+
+function renderMarkdown(content) {
+  return DOMPurify.sanitize(marked.parse(content))
+}
 
 const route = inject('route')
 const open = ref(false)
@@ -141,3 +154,38 @@ async function send() {
   }
 }
 </script>
+
+<style scoped>
+.chat-markdown :deep(p) {
+  margin-bottom: 0.5rem;
+}
+.chat-markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.chat-markdown :deep(ul),
+.chat-markdown :deep(ol) {
+  margin: 0.25rem 0 0.5rem 1.1rem;
+}
+.chat-markdown :deep(ul) {
+  list-style: disc;
+}
+.chat-markdown :deep(ol) {
+  list-style: decimal;
+}
+.chat-markdown :deep(li) {
+  margin-bottom: 0.15rem;
+}
+.chat-markdown :deep(strong) {
+  font-weight: 600;
+}
+.chat-markdown :deep(a) {
+  color: var(--color-primary, #1d4ed8);
+  text-decoration: underline;
+}
+.chat-markdown :deep(code) {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.85em;
+}
+</style>
