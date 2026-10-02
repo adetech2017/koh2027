@@ -14,7 +14,7 @@
               </div>
               <div>
                 <h3 class="font-semibold text-dark mb-2">Email</h3>
-                <a href="mailto:campaign@koh2027.ngm" class="text-primary hover:underline">campaign@koh2027.ngm</a>
+                <a href="mailto:campaign@koh2027.ng" class="text-primary hover:underline">campaign@koh2027.ng</a>
               </div>
               <div>
                 <h3 class="font-semibold text-dark mb-2">Phone</h3>
@@ -23,9 +23,9 @@
               <div>
                 <h3 class="font-semibold text-dark mb-4">Follow Us</h3>
                 <div class="flex gap-4">
-                  <a href="https://facebook.com" target="_blank" class="text-primary hover:text-primary-dark">Facebook</a>
-                  <a href="https://twitter.com" target="_blank" class="text-primary hover:text-primary-dark">Twitter</a>
-                  <a href="https://instagram.com" target="_blank" class="text-primary hover:text-primary-dark">Instagram</a>
+                  <a href="https://facebook.com/KadriObafemiHamzat" target="_blank" class="text-primary hover:text-primary-dark">Facebook</a>
+                  <a href="https://x.com/OfficialKOH2027" target="_blank" class="text-primary hover:text-primary-dark">Twitter</a>
+                  <a href="https://instagram.com/OfficialKOH2027" target="_blank" class="text-primary hover:text-primary-dark">Instagram</a>
                 </div>
               </div>
             </div>
