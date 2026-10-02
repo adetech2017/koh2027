@@ -14,7 +14,7 @@
               </div>
               <div>
                 <h3 class="font-semibold text-dark mb-2">Email</h3>
-                <a href="mailto:campaign@kohforlakosstate.com" class="text-primary hover:underline">campaign@kohforlakosstate.com</a>
+                <a href="mailto:campaign@koh2027.ngm" class="text-primary hover:underline">campaign@koh2027.ngm</a>
               </div>
               <div>
                 <h3 class="font-semibold text-dark mb-2">Phone</h3>

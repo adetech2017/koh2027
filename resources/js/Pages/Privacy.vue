@@ -28,7 +28,7 @@
           <p>You have the right to access, update, or delete your personal information at any time. You can also unsubscribe from our mailing list by clicking the unsubscribe link in any email.</p>
 
           <h2 class="text-2xl font-bold text-dark">Contact Us</h2>
-          <p>If you have any questions about this privacy policy or our privacy practices, please contact us at <a href="mailto:campaign@kohforlakosstate.com" class="text-primary hover:underline">campaign@kohforlakosstate.com</a>.</p>
+          <p>If you have any questions about this privacy policy or our privacy practices, please contact us at <a href="mailto:campaign@koh2027.ngm" class="text-primary hover:underline">campaign@koh2027.ngm</a>.</p>
 
           <p class="text-sm text-gray-500 mt-12">Last updated: January 2026</p>
         </div>

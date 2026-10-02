@@ -22,7 +22,7 @@ class ContactReceivedMail extends Mailable
     {
         return new Envelope(
             to: [
-                new Address(config('mail.campaign_address', 'campaign@kohforlakosstate.com'), 'KOH Campaign'),
+                new Address(config('mail.campaign_address', 'campaign@koh2027.ngm'), 'KOH Campaign'),
             ],
             subject: 'New Contact: ' . $this->contact->subject,
         );

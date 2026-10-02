@@ -1724,7 +1724,7 @@ GET  /api/merchandise           - Merchandise API (JSON)
 - Campaign Manager: [Name] - [Email] - [Phone]
 - Digital Lead: [Name] - [Email] - [Phone]
 - Media Contact: [Name] - [Email] - [Phone]
-- General: campaign@kohforlakosstate.com | +234-XXX-XXXX
+- General: campaign@koh2027.ngm | +234-XXX-XXXX
 
 ---
 
