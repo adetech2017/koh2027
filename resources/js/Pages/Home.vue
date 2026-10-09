@@ -239,14 +239,15 @@
         <div class="bg-white rounded-xl shadow-card p-8 md:p-12 grid grid-cols-1 md:grid-cols-5 gap-8 items-center">
           <div class="md:col-span-3">
             <p class="text-sm font-semibold uppercase tracking-wider text-gold-dark mb-2">The Lagos Promise</p>
-            <h2 id="manifesto-heading" class="text-3xl md:text-4xl font-bold text-dark mb-4">Read the manifesto</h2>
+            <h2 id="manifesto-heading" class="text-3xl md:text-4xl font-bold text-dark mb-4">Ask about the manifesto</h2>
             <p class="text-body leading-relaxed">
-              The full manifesto and a short document for each of the {{ pillarCountWord }} pillars, free to download and share.
-              Got a question? Ask the Manifesto Assistant and get an answer from the documents themselves.
+              An updated manifesto covering all {{ pillarCountWord }} pillars is on its way.
+              In the meantime, ask the Manifesto Assistant any question and get an answer from the documents themselves.
             </p>
           </div>
           <div class="md:col-span-2 flex flex-col gap-3">
-            <Link href="/materials" class="btn-primary text-center">Download the manifesto</Link>
+            <!-- Hidden while the team drafts a newer manifesto; restore once it's published. -->
+            <!-- <Link href="/materials" class="btn-primary text-center">Download the manifesto</Link> -->
             <button type="button" class="btn-secondary" @click="openAssistant">Ask the Manifesto Assistant</button>
           </div>
         </div>
