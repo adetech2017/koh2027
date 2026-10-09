@@ -6,7 +6,6 @@ use App\Models\ConstituentNote;
 use App\Models\Contact;
 use App\Models\Volunteer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class NotesController
 {
@@ -34,7 +33,8 @@ class NotesController
 
     public function destroy(ConstituentNote $note)
     {
-        Gate::authorize('delete', $note);
+        // No ConstituentNotePolicy exists, so Gate::authorize('delete') always denied
+        abort_unless($note->author_id === auth()->id() || auth()->user()->isAdmin(), 403);
 
         $note->delete();
 

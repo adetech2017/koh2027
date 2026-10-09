@@ -26,3 +26,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /The Lagos Promise Full.docx
+
+# Local notes with account credentials; never commit
+/users.txt

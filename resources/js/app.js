@@ -2,6 +2,7 @@ import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { ZiggyVue } from 'ziggy-js'
+import { installClickTracking } from './Utils/tracking'
 
 createInertiaApp({
   title: (title) => `${title} — KOH 2027`,
@@ -18,3 +19,5 @@ createInertiaApp({
   },
   progress: { color: '#FFB81C' },
 })
+
+installClickTracking()

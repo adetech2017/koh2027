@@ -5,7 +5,7 @@
         <img
           v-if="event.image_url"
           :src="event.image_url"
-          :alt="event.title"
+          :alt="event.image_alt || ''"
           class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
         <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
@@ -14,7 +14,7 @@
           </svg>
         </div>
         <div class="absolute top-3 right-3 bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold">
-          {{ event.event_type }}
+          {{ typeLabel }}
         </div>
       </div>
       <div class="p-4">
@@ -38,17 +38,21 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
-defineProps({
+const props = defineProps({
   event: {
     type: Object,
     required: true,
   },
 })
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+const TYPE_LABELS = { rally: 'Rally', townhall: 'Town Hall', fundraiser: 'Fundraiser', workshop: 'Workshop', meeting: 'Meeting', other: 'Event' }
+const typeLabel = computed(() => TYPE_LABELS[props.event.event_type] || props.event.event_type)
+
+// e.g. "Sat 31 May 2026, 10:00"
+const formatDate = (dateString) => new Date(dateString).toLocaleString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+})
 </script>

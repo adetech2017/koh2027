@@ -29,7 +29,19 @@ class AdminLoginController extends Controller
         ]);
 
         if ($auth->attempt($credentials)) {
+            $user = $auth->user();
+
+            // Suspended accounts keep their password but can't sign in
+            if ($user->isDeactivated()) {
+                $auth->guard()->logout();
+                throw ValidationException::withMessages([
+                    'email' => 'This account has been suspended. Contact an administrator.',
+                ]);
+            }
+
             $request->session()->regenerate();
+            $user->forceFill(['last_login_at' => now()])->saveQuietly();
+
             return redirect()->route('admin.dashboard');
         }
 

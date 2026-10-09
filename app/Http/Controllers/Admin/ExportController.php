@@ -24,7 +24,7 @@ class ExportController
     {
         Gate::authorize('manage-content');
 
-        $filters = $request->only('status', 'lga');
+        $filters = $request->only('status', 'lga', 'vehicle');
 
         return $this->exportService->exportVolunteers($filters);
     }

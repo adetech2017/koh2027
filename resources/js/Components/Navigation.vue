@@ -19,7 +19,9 @@
           <div class="relative" @mouseenter="platformsOpen = true" @mouseleave="platformsOpen = false">
             <button
               type="button"
-              class="flex items-center gap-1 focus:outline-none"
+              class="flex items-center gap-1"
+              :aria-expanded="platformsOpen"
+              aria-haspopup="true"
               :class="isActive('platforms') || isActive('merchandise') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'"
               @click="platformsOpen = !platformsOpen"
             >
@@ -29,7 +31,7 @@
             <div v-show="platformsOpen" class="absolute left-0 top-full pt-2 w-52">
               <div class="bg-white rounded-lg shadow-card-hover border border-light-gray py-2">
                 <Link href="/platforms" class="block px-4 py-2 text-sm text-body hover:bg-light-blue hover:text-primary transition-colors">Our Platforms</Link>
-                <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue hover:text-primary transition-colors">Merchandise</Link>
+                <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue hover:text-primary transition-colors">Merchandise Designs</Link>
               </div>
             </div>
           </div>
@@ -43,12 +45,19 @@
 
         <!-- Right Actions -->
         <div class="hidden md:flex items-center space-x-4">
-          <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-secondary text-sm">Volunteer</a>
-          <a href="https://hamzatforlagos.com/register-voter" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">Voter Registration</a>
+          <a :href="campaign.volunteerUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary text-sm">Volunteer</a>
+          <a :href="campaign.voterRegistrationUrl" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">Voter Registration</a>
         </div>
 
         <!-- Mobile Menu Toggle -->
-        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 text-body hover:text-primary transition-colors">
+        <button
+          type="button"
+          @click="mobileMenuOpen = !mobileMenuOpen"
+          class="md:hidden p-2 text-body hover:text-primary transition-colors"
+          :aria-expanded="mobileMenuOpen"
+          aria-controls="mobile-menu"
+          :aria-label="mobileMenuOpen ? 'Close menu' : 'Open menu'"
+        >
           <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -59,13 +68,14 @@
       </div>
 
       <!-- Mobile Menu -->
-      <div v-if="mobileMenuOpen" class="md:hidden pb-4 space-y-2 border-t border-light-gray pt-4">
+      <div v-if="mobileMenuOpen" id="mobile-menu" class="md:hidden pb-4 space-y-2 border-t border-light-gray pt-4" @click="onMobileMenuClick">
         <Link href="/" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Home</Link>
         <Link href="/about" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">About</Link>
 
         <!-- Platforms expandable section -->
         <button
           type="button"
+          :aria-expanded="mobilePlatformsOpen"
           class="w-full flex items-center justify-between px-4 py-2 text-body hover:bg-light-blue rounded transition-colors"
           @click="mobilePlatformsOpen = !mobilePlatformsOpen"
         >
@@ -74,7 +84,7 @@
         </button>
         <div v-if="mobilePlatformsOpen" class="pl-4 space-y-1">
           <Link href="/platforms" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Our Platforms</Link>
-          <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Merchandise</Link>
+          <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Merchandise Designs</Link>
         </div>
 
         <Link href="/materials" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Manifesto</Link>
@@ -83,8 +93,8 @@
         <Link href="/gallery" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Gallery</Link>
         <Link href="/contact" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Contact</Link>
         <div class="flex flex-col space-y-2 pt-2">
-          <a href="https://hamzatforlagos.com/volunteer" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-sm text-center">Volunteer</a>
-          <a href="https://hamzatforlagos.com/register-voter" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-sm text-center">Voter Registration</a>
+          <a :href="campaign.volunteerUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-sm text-center">Volunteer</a>
+          <a :href="campaign.voterRegistrationUrl" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-sm text-center">Voter Registration</a>
         </div>
       </div>
     </div>
@@ -103,19 +113,22 @@ const mobileMenuOpen = ref(false)
 const platformsOpen = ref(false)
 const mobilePlatformsOpen = ref(false)
 
-const currentPath = computed(() => {
-  if (typeof window !== 'undefined') {
-    return window.location.pathname
-  }
-  return ''
-})
+const campaign = computed(() => page.props.campaign || {})
+
+// page.url follows Inertia navigation; strip the query string
+const currentPath = computed(() => (page.url || '').split('?')[0])
+
+// Close the mobile menu once a link inside it is tapped
+const onMobileMenuClick = (event) => {
+  if (event.target.closest('a')) mobileMenuOpen.value = false
+}
 
 const isActive = (path) => {
   const current = currentPath.value
   if (path === '/') {
     return current === '/'
   }
-  return current.includes(`/${path}`)
+  return current === `/${path}` || current.startsWith(`/${path}/`)
 }
 
 const handleScroll = () => {
@@ -123,7 +136,7 @@ const handleScroll = () => {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', handleScroll, { passive: true })
 })
 
 onUnmounted(() => {

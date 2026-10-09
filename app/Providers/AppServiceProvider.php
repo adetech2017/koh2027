@@ -31,11 +31,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('contact', function (Request $request) {
-            return Limit::perHour(5)->by($request->ip());
+            // A readable form error instead of a bare 429 page
+            return Limit::perHour(5)->by($request->ip())->response(
+                fn () => back()->withErrors(['message' => 'You have sent several messages recently. Please wait a little before sending another.'])
+            );
         });
 
         RateLimiter::for('newsletter', function (Request $request) {
-            return Limit::perHour(10)->by($request->ip());
+            // A readable form error instead of a bare 429 page
+            return Limit::perHour(10)->by($request->ip())->response(
+                fn () => back()->withErrors(['email' => 'Too many attempts. Please try again in a few minutes.'])
+            );
         });
 
         RateLimiter::for('volunteer', function (Request $request) {

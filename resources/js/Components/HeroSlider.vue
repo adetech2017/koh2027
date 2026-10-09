@@ -1,7 +1,7 @@
 <template>
-  <div class="relative w-full h-screen overflow-hidden bg-dark">
+  <section class="relative w-full h-[calc(100svh-4rem)] md:h-[calc(100svh-5rem)] min-h-[28rem] max-h-[56rem] overflow-hidden bg-dark" aria-roledescription="carousel" aria-label="Campaign highlights">
     <!-- Progress Bar -->
-    <div class="absolute top-0 left-0 h-1 bg-gold transition-all duration-100 z-10" :style="{ width: progressWidth + '%' }"></div>
+    <div class="absolute top-0 left-0 h-1 bg-gold z-10" :style="{ width: progressWidth + '%' }" aria-hidden="true"></div>
 
     <Swiper
       ref="swiperRef"
@@ -16,13 +16,16 @@
       :resistance-ratio="0.85"
       @swiper="onSwiper"
       @slide-change="onSlideChange"
+      @autoplay-time-left="onTimeLeft"
       class="w-full h-full"
     >
-      <SwiperSlide v-for="(slide, idx) in slides" :key="idx" class="relative">
+      <SwiperSlide v-for="(slide, idx) in slides" :key="idx" class="relative" role="group" aria-roledescription="slide" :aria-label="`${idx + 1} of ${slides.length}`">
         <!-- Background Image with Overlay -->
         <div class="absolute inset-0">
           <img
             :src="slide.image_url || '/placeholder-hero.jpg'"
+            :loading="idx === 0 ? 'eager' : 'lazy'"
+            :fetchpriority="idx === 0 ? 'high' : 'auto'"
             :alt="slide.image_alt"
             class="w-full h-full object-cover"
           />
@@ -40,12 +43,13 @@
             </div>
 
             <!-- Headline -->
-            <h1
+            <component
+              :is="idx === 0 ? 'h1' : 'h2'"
               class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight max-w-2xl animate-slide-up"
               :style="{ animationDelay: '0.5s' }"
             >
               {{ slide.headline }}
-            </h1>
+            </component>
 
             <!-- Subtitle -->
             <p
@@ -56,8 +60,12 @@
             </p>
 
             <!-- CTA Button -->
-            <div class="animate-fade-in" :style="{ animationDelay: '1.2s' }">
-              <button
+            <div v-if="slide.cta_text && slide.cta_url" class="animate-fade-in" :style="{ animationDelay: '1.2s' }">
+              <a
+                :href="slide.cta_url"
+                data-track="cta_click"
+                :data-track-label="`Hero: ${slide.cta_text}`"
+                v-bind="isExternal(slide.cta_url) ? { target: '_blank', rel: 'noopener noreferrer' } : {}"
                 :class="[
                   'inline-block px-8 py-4 rounded font-semibold text-lg transition-all hover:scale-105 active:scale-95',
                   slide.cta_style === 'primary'
@@ -66,7 +74,7 @@
                 ]"
               >
                 {{ slide.cta_text }}
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -75,6 +83,7 @@
       <!-- Navigation Arrows -->
       <button
         @click="previousSlide"
+        aria-label="Previous slide"
         class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full flex items-center justify-center text-dark transition-all hidden md:flex"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,6 +92,7 @@
       </button>
       <button
         @click="nextSlide"
+        aria-label="Next slide"
         class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white bg-opacity-70 hover:bg-opacity-90 rounded-full flex items-center justify-center text-dark transition-all hidden md:flex"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,14 +113,15 @@
               : 'w-2 h-2 bg-white bg-opacity-50 hover:bg-opacity-75',
           ]"
           :aria-label="`Go to slide ${idx + 1}`"
+          :aria-current="idx === currentSlide ? 'true' : undefined"
         ></button>
       </div>
     </Swiper>
-  </div>
+  </section>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, EffectFade } from 'swiper/modules'
 import 'swiper/css'
@@ -124,36 +135,24 @@ defineProps({
 })
 
 const modules = [Autoplay, EffectFade]
+
+const isExternal = (url) => /^https?:\/\//i.test(url || '')
 const swiperRef = ref(null)
 const currentSlide = ref(0)
 const progressWidth = ref(0)
-let progressInterval = null
 let swiperInstance = null
 
 const onSwiper = (swiper) => {
   swiperInstance = swiper
-  startProgress()
 }
 
 const onSlideChange = (swiper) => {
   currentSlide.value = swiper.realIndex
-  progressWidth.value = 0
-  clearInterval(progressInterval)
-  startProgress()
 }
 
-const startProgress = () => {
-  let elapsed = 0
-  const duration = 6000
-  const interval = 50
-
-  progressInterval = setInterval(() => {
-    elapsed += interval
-    progressWidth.value = (elapsed / duration) * 100
-    if (elapsed >= duration) {
-      clearInterval(progressInterval)
-    }
-  }, interval)
+// Swiper reports the remaining fraction of the current slide's delay; it stops while paused
+const onTimeLeft = (swiper, timeLeft, progress) => {
+  progressWidth.value = Math.min(100, Math.max(0, (1 - progress) * 100))
 }
 
 const previousSlide = () => {
@@ -173,10 +172,6 @@ const goToSlide = (index) => {
     swiperInstance.slideToLoop(index)
   }
 }
-
-onMounted(() => {
-  startProgress()
-})
 </script>
 
 <style scoped>

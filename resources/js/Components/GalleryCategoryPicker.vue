@@ -10,10 +10,11 @@
       >
         <span class="flex items-center gap-2 min-w-0">
           <input
-            type="checkbox"
-            :checked="modelValue === cat.id"
+            type="radio"
+            name="gallery-category"
+            :checked="Number(modelValue) === cat.id"
             @change="select(cat.id)"
-            class="rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+            class="border-gray-300 text-primary focus:ring-primary focus:ring-2"
           />
           <span class="truncate text-dark">{{ cat.name }}</span>
         </span>

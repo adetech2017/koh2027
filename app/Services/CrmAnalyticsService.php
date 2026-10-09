@@ -35,16 +35,33 @@ class CrmAnalyticsService
 
     public function growthTrend(int $days = 30): array
     {
-        $dates = collect(range(0, $days - 1))
-            ->map(fn ($i) => now()->subDays($days - 1 - $i)->toDateString())
-            ->values();
+        $start = now()->subDays($days - 1)->startOfDay();
 
-        return $dates->map(fn ($date) => [
-            'date' => $date,
-            'volunteers' => Volunteer::whereDate('created_at', $date)->count(),
-            'contacts' => Contact::whereDate('created_at', $date)->count(),
-            'subscribers' => NewsletterSubscriber::whereDate('created_at', $date)->count(),
-        ])->toArray();
+        $volunteers = $this->dailyCounts(Volunteer::query(), $start);
+        $contacts = $this->dailyCounts(Contact::query(), $start);
+        $subscribers = $this->dailyCounts(NewsletterSubscriber::query(), $start);
+
+        return collect(range(0, $days - 1))
+            ->map(function ($i) use ($start, $volunteers, $contacts, $subscribers) {
+                $date = $start->copy()->addDays($i)->toDateString();
+
+                return [
+                    'date' => $date,
+                    'volunteers' => (int) ($volunteers[$date] ?? 0),
+                    'contacts' => (int) ($contacts[$date] ?? 0),
+                    'subscribers' => (int) ($subscribers[$date] ?? 0),
+                ];
+            })
+            ->toArray();
+    }
+
+    private function dailyCounts($query, $start): array
+    {
+        return $query->where('created_at', '>=', $start)
+            ->selectRaw('DATE(created_at) as day, count(*) as count')
+            ->groupBy('day')
+            ->pluck('count', 'day')
+            ->toArray();
     }
 
     public function lgaBreakdown(): array
@@ -84,24 +101,56 @@ class CrmAnalyticsService
         return $skillCounts;
     }
 
-    public function eventAttendanceRates(): array
+    /**
+     * RSVP fill for upcoming events (soonest first), then the most recent past ones.
+     */
+    public function eventAttendanceRates(int $limit = 8): array
     {
-        return Event::active()
-            ->get(['id', 'title', 'capacity'])
-            ->map(function ($event) {
-                $confirmed = EventRsvp::where('event_id', $event->id)
-                    ->where('status', 'confirmed')
-                    ->count();
+        $withConfirmed = fn ($query) => $query->withCount(['rsvps as confirmed' => fn ($q) => $q->where('status', 'confirmed')]);
 
-                return [
-                    'id' => $event->id,
-                    'title' => $event->title,
-                    'confirmed' => $confirmed,
-                    'capacity' => $event->capacity,
-                    'attendanceRate' => $event->capacity ? round(($confirmed / $event->capacity) * 100, 1) : 0,
-                ];
-            })
+        $upcoming = $withConfirmed(Event::active()->where('starts_at', '>=', now()->startOfDay()))
+            ->orderBy('starts_at')->take($limit)->get();
+        $past = $withConfirmed(Event::active()->where('starts_at', '<', now()->startOfDay()))
+            ->orderByDesc('starts_at')->take(max(0, $limit - $upcoming->count()))->get();
+
+        return $upcoming->concat($past)
+            ->map(fn ($event) => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'starts_at' => $event->starts_at,
+                'is_past' => $event->starts_at->isPast(),
+                'confirmed' => (int) $event->confirmed,
+                'capacity' => $event->capacity,
+                'fillRate' => $event->capacity ? round(($event->confirmed / $event->capacity) * 100, 1) : null,
+            ])
+            ->values()
             ->toArray();
+    }
+
+    /**
+     * New sign-ups in the last $days days, and in the $days before that, for comparison.
+     */
+    public function periodTotals(int $days): array
+    {
+        $start = now()->subDays($days - 1)->startOfDay();
+        $previousStart = $start->copy()->subDays($days);
+
+        $models = [
+            'volunteers' => Volunteer::class,
+            'contacts' => Contact::class,
+            'subscribers' => NewsletterSubscriber::class,
+            'rsvps' => EventRsvp::class,
+        ];
+
+        $totals = [];
+        foreach ($models as $key => $model) {
+            $totals[$key] = [
+                'current' => $model::where('created_at', '>=', $start)->count(),
+                'previous' => $model::whereBetween('created_at', [$previousStart, $start])->count(),
+            ];
+        }
+
+        return $totals;
     }
 
     public function newsletterFunnel(): array
