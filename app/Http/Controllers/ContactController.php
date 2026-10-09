@@ -17,7 +17,12 @@ class ContactController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        Mail::send(new ContactReceivedMail($contact));
+        // The message is already saved; a mail hiccup shouldn't show the visitor an error page
+        try {
+            Mail::send(new ContactReceivedMail($contact));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return back()->with('success', 'Your message has been sent. We will respond within 48 hours.');
     }

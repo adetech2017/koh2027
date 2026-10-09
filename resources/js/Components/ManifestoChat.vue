@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { inject, ref, nextTick } from 'vue'
+import { inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -104,6 +104,12 @@ const messages = ref([])
 const loading = ref(false)
 const error = ref('')
 const scrollEl = ref(null)
+
+// Other parts of the page can open the assistant with:
+// window.dispatchEvent(new CustomEvent('open-manifesto-chat'))
+const openFromPage = () => { open.value = true }
+onMounted(() => window.addEventListener('open-manifesto-chat', openFromPage))
+onBeforeUnmount(() => window.removeEventListener('open-manifesto-chat', openFromPage))
 
 async function scrollToBottom() {
   await nextTick()

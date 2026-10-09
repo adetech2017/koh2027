@@ -1,11 +1,11 @@
 <template>
   <AppLayout>
-    <Head title="Materials & Resources" />
+    <Head title="The Lagos Promise — Manifesto" />
     <div class="min-h-screen bg-white">
       <div class="bg-primary text-white py-12 md:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 class="text-4xl md:text-5xl font-bold mb-4">Manifesto</h1>
-          <p class="text-xl text-gray-200">Download brochures, policies, and campaign resources</p>
+          <p class="text-xl text-gray-200">The Lagos Promise: read it in full, or one pillar at a time</p>
         </div>
       </div>
 
@@ -30,7 +30,10 @@
                   <ArrowDownTrayIcon class="w-5 h-5" />
                   Download Full Manifesto
                 </span>
-                <span class="text-sm text-gray-300">{{ formatFileSize(manifesto.file_size) }} &middot; {{ manifesto.file_type?.toUpperCase() }}</span>
+                <span class="text-sm text-gray-300">
+                  {{ formatFileSize(manifesto.file_size) }} &middot; {{ manifesto.file_type?.toUpperCase() }}
+                  <template v-if="isLarge(manifesto.file_size)"><br class="sm:hidden" /><span class="text-gold"> Large file: best downloaded on Wi-Fi, or start with a single pillar below.</span></template>
+                </span>
               </div>
             </div>
           </a>
@@ -39,11 +42,11 @@
           <div v-if="pillarMaterials.length">
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-8">
               <div>
-                <h3 class="text-2xl font-bold text-dark mb-1">The Seven Pillars of the Promise</h3>
+                <h3 class="text-2xl font-bold text-dark mb-1">The {{ PILLARS.length === 7 ? 'Seven' : PILLARS.length }} Pillars of the Promise</h3>
                 <p class="text-body">Download each pillar on its own &mdash; a lighter file for the section you care about most.</p>
               </div>
               <div class="flex gap-1.5 text-2xl font-extrabold tracking-widest select-none">
-                <span v-for="p in PILLARS" :key="p.letter" :style="{ color: p.color }">{{ p.letter }}</span>
+                <span v-for="p in PILLARS" :key="p.number" :style="{ color: p.color }">{{ p.letter }}</span>
               </div>
             </div>
 
@@ -68,7 +71,7 @@
                   <h4 class="font-bold text-dark mb-2 group-hover:text-primary transition-colors">{{ item.pillar.name }}</h4>
                   <p class="text-sm text-body mb-5 leading-relaxed">{{ item.pillar.summary }}</p>
                   <div class="flex items-center justify-between pt-4 border-t border-light-gray">
-                    <span class="text-xs text-gray-400">{{ formatFileSize(item.material.file_size) }} &middot; {{ item.material.file_type?.toUpperCase() }}</span>
+                    <span class="text-xs" :class="isLarge(item.material.file_size) ? 'text-amber-700' : 'text-gray-400'">{{ formatFileSize(item.material.file_size) }} &middot; {{ item.material.file_type?.toUpperCase() }}</span>
                     <span class="inline-flex items-center gap-1 text-sm font-semibold group-hover:gap-2 transition-all" :style="{ color: item.pillar.color }">
                       Download
                       <ArrowDownTrayIcon class="w-4 h-4" />
@@ -78,12 +81,21 @@
               </a>
             </div>
           </div>
+          <!-- Manifesto Assistant -->
+          <div class="bg-light-blue rounded-lg p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5">
+            <ChatBubbleLeftRightIcon class="w-10 h-10 text-primary flex-shrink-0" aria-hidden="true" />
+            <div class="flex-grow">
+              <p class="font-bold text-dark text-lg">Short on time or data?</p>
+              <p class="text-body">Ask the Manifesto Assistant a question and get an answer straight from the documents, no download needed.</p>
+            </div>
+            <button type="button" class="btn-primary whitespace-nowrap" @click="openAssistant">Ask a question</button>
+          </div>
         </section>
 
         <!-- Other resource categories -->
         <section v-if="otherCategories.length">
           <div class="mb-8 flex gap-2 flex-wrap border-b border-light-gray pb-6">
-            <button v-for="cat in otherCategories" :key="cat" @click="activeCategory = cat" :class="['px-4 py-2 rounded transition-colors capitalize cursor-pointer font-medium', activeCategory === cat ? 'btn-primary' : 'text-body border border-light-gray hover:border-primary hover:text-primary']">{{ cat }}</button>
+            <button v-for="cat in otherCategories" :key="cat" type="button" :aria-pressed="activeCategory === cat" @click="activeCategory = cat" :class="['px-4 py-2 rounded-full text-sm transition-colors capitalize font-medium', activeCategory === cat ? 'bg-primary text-white' : 'text-body border border-gray-300 hover:border-primary hover:text-primary']">{{ cat === 'faq' ? 'FAQ' : cat }}</button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <a v-for="material in materialsByCategory" :key="material.id" :href="`/materials/${material.id}/download`" class="bg-white border border-light-gray rounded-lg p-6 hover:shadow-card transition-all group">
@@ -95,7 +107,7 @@
                   <h3 class="font-bold text-dark group-hover:text-primary transition-colors">{{ material.title }}</h3>
                   <p class="text-sm text-body">{{ material.description }}</p>
                   <div class="flex items-center justify-between mt-4">
-                    <span class="text-xs text-gray-400">{{ formatFileSize(material.file_size) }} &middot; {{ material.file_type.toUpperCase() }}</span>
+                    <span class="text-xs text-gray-400">{{ formatFileSize(material.file_size) }} &middot; {{ material.file_type?.toUpperCase() }}</span>
                     <span class="text-xs text-primary font-semibold">{{ material.download_count }} downloads</span>
                   </div>
                 </div>
@@ -112,33 +124,31 @@
 import { computed, ref } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import {
-  BookOpenIcon,
-  DocumentTextIcon,
-  ArrowDownTrayIcon,
-  HeartIcon,
-  BoltIcon,
-  BriefcaseIcon,
-  BuildingLibraryIcon,
-  UserGroupIcon,
-  ShieldCheckIcon,
-  HomeIcon,
-} from '@heroicons/vue/24/outline'
+import { BookOpenIcon, DocumentTextIcon, ArrowDownTrayIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
+import { getPlatformIcon } from '@/Utils/platformIcons'
+import { fileSize } from '@/Utils/format'
 
 const props = defineProps({
-  materials: Object,
-  categories: Array,
+  materials: { type: Object, default: () => ({}) },
+  categories: { type: Array, default: () => [] },
+  pillars: { type: Array, default: () => [] },
 })
 
-const PILLARS = [
-  { number: 1, letter: 'P', name: 'People First', summary: 'Health, education, safety and service built around the dignity of every Lagosian.', icon: HeartIcon, color: '#27AE60' },
-  { number: 2, letter: 'R', name: 'Renewal', summary: 'Building the roads, power, water and drainage that let Lagos work.', icon: BoltIcon, color: '#FFB81C' },
-  { number: 3, letter: 'O', name: 'Opportunity', summary: 'Widening enterprise, industry, trade and the Lagos digital economy.', icon: BriefcaseIcon, color: '#003D82' },
-  { number: 4, letter: 'M', name: 'Machinery of Government', summary: 'A government that works through the council, the courts and the citizen interface.', icon: BuildingLibraryIcon, color: '#6B21A8' },
-  { number: 5, letter: 'I', name: 'Inclusion', summary: 'Equity for every Lagos woman, young person, and every division of the state.', icon: UserGroupIcon, color: '#DB2777' },
-  { number: 6, letter: 'S', name: 'Security and Resilience', summary: 'A safe, climate-resilient and intelligently governed megacity.', icon: ShieldCheckIcon, color: '#B91C1C' },
-  { number: 7, letter: 'E', name: 'Economic Dignity', summary: 'Affordable housing, mobility and a lower cost of living for every household.', icon: HomeIcon, color: '#0D9488' },
-]
+// From Admin → Platform, so edits there show here too. The first letters spell P-R-O-M-I-S-E.
+const PILLARS = computed(() => props.pillars.map((p, i) => ({
+  number: i + 1,
+  letter: (p.title || '?').charAt(0).toUpperCase(),
+  name: p.title,
+  summary: p.summary,
+  icon: getPlatformIcon(p.icon),
+  color: p.color || '#003D82',
+})))
+
+// Files this big are costly to download on mobile data, so say so
+const LARGE_FILE = 25 * 1024 * 1024
+const isLarge = (bytes) => bytes > LARGE_FILE
+
+const openAssistant = () => window.dispatchEvent(new CustomEvent('open-manifesto-chat'))
 
 const manifestoGroup = computed(() => props.materials?.manifesto || [])
 
@@ -151,7 +161,7 @@ const pillarMaterials = computed(() => {
     .map((m) => {
       const match = m.title.match(/pillar\s*(\d)/i)
       if (!match) return null
-      const pillar = PILLARS[Number(match[1]) - 1]
+      const pillar = PILLARS.value[Number(match[1]) - 1]
       if (!pillar) return null
       return { material: m, pillar }
     })
@@ -166,11 +176,5 @@ const materialsByCategory = computed(() => {
   return props.materials[activeCategory.value] || []
 })
 
-const formatFileSize = (bytes) => {
-  if (!bytes) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
+const formatFileSize = fileSize
 </script>

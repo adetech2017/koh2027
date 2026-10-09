@@ -31,7 +31,11 @@ class TagController
 
     public function attach(Request $request, string $type, int $id)
     {
-        $validated = $request->validate(['tag_id' => 'required|exists:tags,id']);
+        // Attach an existing tag by id, or create one on the fly by name
+        $validated = $request->validate([
+            'tag_id' => 'required_without:name|nullable|exists:tags,id',
+            'name' => 'required_without:tag_id|nullable|string|max:100',
+        ]);
 
         $modelClass = match ($type) {
             'contact' => Contact::class,
@@ -40,7 +44,11 @@ class TagController
         };
 
         $model = $modelClass::findOrFail($id);
-        $model->tags()->syncWithoutDetaching([$validated['tag_id']]);
+
+        $tagId = $validated['tag_id']
+            ?? Tag::firstOrCreate(['name' => trim($validated['name'])], ['color' => '#003D82'])->id;
+
+        $model->tags()->syncWithoutDetaching([$tagId]);
 
         return back()->with('success', 'Tag added');
     }

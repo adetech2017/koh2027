@@ -35,6 +35,10 @@ class ExportService
             $query->where('lga', $filters['lga']);
         }
 
+        if (isset($filters['vehicle']) && in_array($filters['vehicle'], ['yes', 'no'])) {
+            $query->where('has_vehicle', $filters['vehicle'] === 'yes');
+        }
+
         $volunteers = $query->cursor();
 
         return $this->streamCsv('volunteers.csv', ['Name', 'Email', 'Phone', 'LGA', 'Skills', 'Status', 'Date'], $this->volunteersToRows($volunteers));

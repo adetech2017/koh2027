@@ -14,6 +14,12 @@ class HandleInertiaRequests extends Middleware
         $ziggy = new \Tighten\Ziggy\Ziggy();
         return array_merge(parent::share($request), [
             'appName' => config('app.name'),
+            'campaign' => [
+                'email' => config('campaign.contact_email'),
+                'phone' => config('campaign.contact_phone'),
+                'volunteerUrl' => config('campaign.volunteer_url'),
+                'voterRegistrationUrl' => config('campaign.voter_registration_url'),
+            ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

@@ -17,30 +17,8 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3'
-import {
-  BriefcaseIcon,
-  BookOpenIcon,
-  HeartIcon,
-  BoltIcon,
-  BuildingLibraryIcon,
-  UserGroupIcon,
-  ShieldCheckIcon,
-  HomeIcon,
-  ArrowRightIcon,
-} from '@heroicons/vue/24/outline'
-
-const iconMap = {
-  briefcase: BriefcaseIcon,
-  'book-open': BookOpenIcon,
-  heart: HeartIcon,
-  bolt: BoltIcon,
-  'building-library': BuildingLibraryIcon,
-  'user-group': UserGroupIcon,
-  'shield-check': ShieldCheckIcon,
-  home: HomeIcon,
-}
-
-const getIcon = (iconName) => iconMap[iconName] || BriefcaseIcon
+import { ArrowRightIcon } from '@heroicons/vue/24/outline'
+import { getPlatformIcon as getIcon } from '@/Utils/platformIcons'
 
 defineProps({
   pillar: {
