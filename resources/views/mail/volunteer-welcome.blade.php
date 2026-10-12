@@ -18,7 +18,7 @@ Our campaign team will review your volunteer registration and reach out to you s
 
 - **Location:** {{ $volunteer->lga }}
 - **Contact:** {{ $volunteer->email }}
-- **Skills:** {{ implode(', ', array_filter($volunteer->skills ?? [])) ?: 'Any' }}
+- **Skills:** {{ collect($volunteer->skills ?? [])->filter()->map(fn ($skill) => Str::headline($skill))->implode(', ') ?: 'Any' }}
 
 ## Stay Connected
 

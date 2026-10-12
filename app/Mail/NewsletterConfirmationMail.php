@@ -21,13 +21,13 @@ class NewsletterConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            to: new Address($this->subscriber->email, $this->subscriber->name ?? ''),
+            to: [new Address($this->subscriber->email, $this->subscriber->name ?? '')],
             subject: 'Confirm Your Subscription — KOH Campaign 2027',
         );
     }
 
     public function content(): Content
     {
-        return new Content(view: 'mail.newsletter-confirmation');
+        return new Content(markdown: 'mail.newsletter-confirmation');
     }
 }

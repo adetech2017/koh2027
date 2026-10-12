@@ -34,10 +34,11 @@ const classify = (el) => {
   } catch {
     return null
   }
-  if (url.origin === window.location.origin) return null
-
-  if (/hamzatforlagos\.com$/i.test(url.hostname) && /volunteer/i.test(url.pathname)) {
-    return ['volunteer_click', el.textContent.trim() || 'Volunteer']
+  if (url.origin === window.location.origin) {
+    // Volunteer buttons lead to the on-site sign-up form
+    return url.pathname === '/volunteer' && window.location.pathname !== '/volunteer'
+      ? ['volunteer_click', el.textContent.trim() || 'Volunteer']
+      : null
   }
   if (SHARE_HOSTS.test(url.hostname) && SHARE_PATHS.test(url.pathname + url.search)) {
     return ['share', url.hostname.replace(/^www\./, '')]

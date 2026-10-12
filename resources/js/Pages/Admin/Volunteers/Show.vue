@@ -88,7 +88,7 @@
                     :key="skill"
                     class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
                   >
-                    {{ skill }}
+                    {{ categoryLabel(skill) }}
                   </span>
                   <span v-if="!volunteer.skills?.length" class="text-gray-400 text-sm">None listed</span>
                 </dd>
@@ -284,6 +284,7 @@ import { ref, computed } from 'vue'
 import { usePage, router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
+import { categoryLabel } from '@/Utils/format'
 
 const page = usePage()
 

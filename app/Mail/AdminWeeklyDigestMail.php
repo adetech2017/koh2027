@@ -29,7 +29,7 @@ class AdminWeeklyDigestMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.admin-weekly-digest',
+            markdown: 'emails.admin-weekly-digest',
             with: [
                 'newContacts' => $this->newContacts,
                 'newVolunteers' => $this->newVolunteers,

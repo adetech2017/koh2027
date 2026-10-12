@@ -27,4 +27,12 @@ class VolunteerRequest extends FormRequest
             'has_vehicle' => ['boolean'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'This email is already signed up as a volunteer. We will be in touch.',
+            'phone.regex' => 'Please enter a valid phone number, e.g. 0803 123 4567.',
+        ];
+    }
 }

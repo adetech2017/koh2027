@@ -20,7 +20,7 @@
                   <MapPinIcon class="w-6 h-6 text-primary flex-shrink-0" aria-hidden="true" />
                   <div>
                     <dt class="font-semibold text-dark">Address</dt>
-                    <dd class="text-body">Lagos State, Nigeria</dd>
+                    <dd class="text-body">{{ campaign.address }}</dd>
                   </div>
                 </div>
                 <div v-if="campaign.email" class="flex gap-3">
@@ -48,7 +48,7 @@
               </ul>
             </div>
             <div class="bg-light-gray rounded-lg p-5 text-sm text-body">
-              Want to help? <a :href="campaign.volunteerUrl" target="_blank" rel="noopener" class="font-semibold text-primary hover:underline">Sign up to volunteer</a>.
+              Want to help? <Link href="/volunteer" class="font-semibold text-primary hover:underline">Sign up to volunteer</Link>.
             </div>
           </div>
 

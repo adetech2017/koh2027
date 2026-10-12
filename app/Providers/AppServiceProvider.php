@@ -45,7 +45,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('volunteer', function (Request $request) {
-            return Limit::perHour(3)->by($request->ip());
+            // A readable form error instead of a bare 429 page
+            return Limit::perHour(3)->by($request->ip())->response(
+                fn () => back()->withErrors(['email' => 'Too many sign-ups from this connection. Please try again later.'])
+            );
         });
 
         RateLimiter::for('manifesto-chat', function (Request $request) {

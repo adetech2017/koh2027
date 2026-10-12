@@ -49,6 +49,14 @@ class PageController extends Controller
         ]]);
     }
 
+    public function volunteer(Request $request): Response
+    {
+        return Inertia::render('Volunteer')->withViewData(['meta' => [
+            'title' => 'Volunteer — KOH 2027',
+            'description' => 'Join the Kadri Obafemi Hamzat campaign team. Give an hour, a skill or a ride in your part of Lagos.',
+        ]]);
+    }
+
     public function privacy(Request $request): Response
     {
         return Inertia::render('Privacy');

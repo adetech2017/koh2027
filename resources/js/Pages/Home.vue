@@ -8,11 +8,9 @@
     <!-- Key actions, right under the hero -->
     <section aria-label="Get involved" class="relative z-10 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:-mt-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-6 md:py-0">
-          <a
-            :href="campaign.volunteerUrl"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-6 md:py-0">
+          <Link
+            href="/volunteer"
             class="group flex items-center gap-4 bg-white rounded-lg shadow-card hover:shadow-card-hover p-5 border-t-4 border-gold transition-all"
           >
             <span class="w-12 h-12 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center flex-shrink-0" aria-hidden="true">
@@ -22,21 +20,7 @@
               <span class="block font-bold text-dark group-hover:text-primary">Volunteer</span>
               <span class="block text-sm text-body">Give an hour, a skill or a ride.</span>
             </span>
-          </a>
-          <a
-            :href="campaign.voterRegistrationUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group flex items-center gap-4 bg-white rounded-lg shadow-card hover:shadow-card-hover p-5 border-t-4 border-primary transition-all"
-          >
-            <span class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0" aria-hidden="true">
-              <CheckBadgeIcon class="w-6 h-6" />
-            </span>
-            <span>
-              <span class="block font-bold text-dark group-hover:text-primary">Register to vote</span>
-              <span class="block text-sm text-body">Make sure your voice counts in 2027.</span>
-            </span>
-          </a>
+          </Link>
           <Link
             href="/materials"
             class="group flex items-center gap-4 bg-white rounded-lg shadow-card hover:shadow-card-hover p-5 border-t-4 border-success transition-all"
@@ -258,10 +242,9 @@
     <section class="py-16 md:py-24 bg-primary text-white" aria-labelledby="join-heading">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 id="join-heading" class="text-3xl md:text-4xl font-bold mb-6">Join the Movement</h2>
-        <p class="text-lg text-gray-100 mb-10 max-w-2xl mx-auto">Be part of building a better Lagos. Volunteer, make sure you're registered to vote, and get campaign news in your inbox.</p>
+        <p class="text-lg text-gray-100 mb-10 max-w-2xl mx-auto">Be part of building a better Lagos. Volunteer with the campaign and get campaign news in your inbox.</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-          <a :href="campaign.volunteerUrl" target="_blank" rel="noopener noreferrer" class="btn-gold">Volunteer</a>
-          <a :href="campaign.voterRegistrationUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary bg-white text-primary hover:bg-gray-100">Voter Registration</a>
+          <Link href="/volunteer" class="btn-gold">Volunteer</Link>
         </div>
         <div class="max-w-md mx-auto">
           <NewsletterForm id="home-newsletter-email" />
@@ -276,7 +259,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { Head, Link, usePage } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Autoplay, Pagination, A11y } from 'swiper/modules'
 import 'swiper/css'
@@ -284,7 +267,6 @@ import 'swiper/css/pagination'
 import {
   ArrowRightIcon,
   CalendarDaysIcon,
-  CheckBadgeIcon,
   CheckCircleIcon,
   DocumentTextIcon,
   UserGroupIcon,
@@ -311,9 +293,6 @@ const props = defineProps({
   testimonials: { type: Array, default: () => [] },
   galleryImages: { type: Array, default: () => [] },
 })
-
-const page = usePage()
-const campaign = computed(() => page.props.campaign || {})
 
 const portraitImage = '/storage/personal/koh-2027-4.jpeg'
 const aboutPoints = ['30+ Years of Leadership Experience', 'Proven Track Record of Achievements', 'Vision for Modern Lagos']

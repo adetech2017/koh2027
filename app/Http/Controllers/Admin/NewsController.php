@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -160,6 +161,12 @@ class NewsController extends Controller
         if ($validated['status'] === 'scheduled' && $publishedAt && $publishedAt->isPast()) {
             // A past "scheduled" time just means publish now
             $validated['status'] = 'published';
+        }
+        // Published articles can be backdated, but a future date means scheduling
+        if ($validated['status'] === 'published' && $publishedAt && $publishedAt->isAfter(now()->addMinute())) {
+            throw ValidationException::withMessages([
+                'published_at' => 'That date is in the future. Choose "Scheduled" to publish later.',
+            ]);
         }
 
         return [

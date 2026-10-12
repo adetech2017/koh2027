@@ -131,12 +131,12 @@
                   :key="skill"
                   class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded"
                 >
-                  {{ skill }}
+                  {{ categoryLabel(skill) }}
                 </span>
                 <span
                   v-if="volunteer.skills.length > 3"
                   class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded"
-                  :title="volunteer.skills.slice(3).join(', ')"
+                  :title="volunteer.skills.slice(3).map(categoryLabel).join(', ')"
                 >
                   +{{ volunteer.skills.length - 3 }}
                 </span>
@@ -199,6 +199,7 @@ import { usePage, router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
+import { categoryLabel } from '@/Utils/format'
 
 const page = usePage()
 

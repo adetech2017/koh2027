@@ -54,9 +54,12 @@
           <input id="n-when" v-model="form.published_at" type="datetime-local" :min="nowLocal" :class="inputClass('published_at')" />
           <p v-if="form.errors.published_at" class="text-red-600 text-sm mt-1">{{ form.errors.published_at }}</p>
         </div>
-        <p v-else-if="article?.published_at && form.status === 'published'" class="text-xs text-gray-500">
-          First published {{ formatDateTime(article.published_at) }}
-        </p>
+        <div v-else-if="form.status === 'published'">
+          <label for="n-date" class="block text-sm font-medium text-dark mb-1">Publish date</label>
+          <input id="n-date" v-model="form.published_at" type="datetime-local" :max="nowLocal" :class="inputClass('published_at')" />
+          <p v-if="form.errors.published_at" class="text-red-600 text-sm mt-1">{{ form.errors.published_at }}</p>
+          <p v-else class="text-xs text-gray-500 mt-1">Shown on the article. Pick an earlier date to backdate it, or leave empty to use the current time.</p>
+        </div>
 
         <label class="flex items-start gap-3 cursor-pointer pt-2 border-t">
           <input v-model="form.is_featured" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
@@ -174,7 +177,7 @@ const form = useForm({
   image_alt: a.image_alt || '',
   is_featured: !!a.is_featured,
   status: a.status || 'draft',
-  published_at: a.status === 'scheduled' ? toLocalInput(a.published_at) : '',
+  published_at: a.status !== 'draft' ? toLocalInput(a.published_at) : '',
 })
 
 const hasErrors = computed(() => Object.keys(form.errors).length > 0)
@@ -234,16 +237,12 @@ const inputClass = (field) => [
   form.errors[field] ? 'border-red-400' : 'border-gray-300',
 ]
 
-const formatDateTime = (iso) => new Date(iso).toLocaleString(undefined, {
-  day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
-})
-
 const submit = () => {
   // File uploads must be POST with a spoofed method, since PHP can't parse multipart PUT bodies
   form
     .transform((data) => ({
       ...data,
-      published_at: data.status === 'scheduled' ? toUtcString(data.published_at) : null,
+      published_at: data.status === 'draft' ? null : toUtcString(data.published_at),
       ...(props.article ? { _method: 'put' } : {}),
     }))
     .post(props.article ? `/admin/news/${props.article.id}` : '/admin/news', {

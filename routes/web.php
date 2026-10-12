@@ -20,6 +20,7 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/platforms', [PageController::class, 'platforms'])->name('platforms');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/volunteer', [PageController::class, 'volunteer'])->name('volunteer');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');

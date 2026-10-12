@@ -17,8 +17,7 @@ class HandleInertiaRequests extends Middleware
             'campaign' => [
                 'email' => config('campaign.contact_email'),
                 'phone' => config('campaign.contact_phone'),
-                'volunteerUrl' => config('campaign.volunteer_url'),
-                'voterRegistrationUrl' => config('campaign.voter_registration_url'),
+                'address' => config('campaign.address'),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

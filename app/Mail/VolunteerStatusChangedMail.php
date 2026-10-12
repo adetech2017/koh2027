@@ -34,7 +34,7 @@ class VolunteerStatusChangedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.volunteer-status-changed',
+            markdown: 'emails.volunteer-status-changed',
             with: [
                 'volunteer' => $this->volunteer,
                 'newStatus' => $this->newStatus,

@@ -20,6 +20,7 @@
             <li><Link href="/materials" class="hover:text-gold transition-colors">Manifesto</Link></li>
             <li><Link href="/events" class="hover:text-gold transition-colors">Events</Link></li>
             <li><Link href="/news" class="hover:text-gold transition-colors">News</Link></li>
+            <li><a href="https://pbat-koh2027.com" target="_blank" rel="noopener" class="hover:text-gold transition-colors">PBAT-KOH website</a></li>
           </ul>
         </div>
 
@@ -27,7 +28,7 @@
         <div>
           <h3 class="font-semibold mb-4">Contact</h3>
           <ul class="space-y-2 text-gray-300 text-sm">
-            <li>Lagos State, Nigeria</li>
+            <li v-if="campaign.address">{{ campaign.address }}</li>
             <li v-if="campaign.email"><a :href="`mailto:${campaign.email}`" class="hover:text-gold transition-colors break-all">{{ campaign.email }}</a></li>
             <li v-if="campaign.phone"><a :href="`tel:${campaign.phone.replace(/[^+\d]/g, '')}`" class="hover:text-gold transition-colors">{{ campaign.phone }}</a></li>
             <li><Link href="/contact" class="hover:text-gold transition-colors">Send us a message →</Link></li>

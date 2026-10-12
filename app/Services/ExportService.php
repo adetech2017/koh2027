@@ -6,6 +6,7 @@ use App\Models\Contact;
 use App\Models\EventRsvp;
 use App\Models\NewsletterSubscriber;
 use App\Models\Volunteer;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportService
@@ -103,7 +104,7 @@ class ExportService
                 $volunteer->email,
                 $volunteer->phone,
                 $volunteer->lga,
-                implode(', ', $volunteer->skills ?? []),
+                collect($volunteer->skills ?? [])->map(fn ($skill) => Str::headline($skill))->implode(', '),
                 $volunteer->status,
                 $volunteer->created_at->format('Y-m-d H:i'),
             ];

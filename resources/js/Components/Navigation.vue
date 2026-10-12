@@ -45,8 +45,7 @@
 
         <!-- Right Actions -->
         <div class="hidden md:flex items-center space-x-4">
-          <a :href="campaign.volunteerUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary text-sm">Volunteer</a>
-          <a :href="campaign.voterRegistrationUrl" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm">Voter Registration</a>
+          <Link href="/volunteer" class="btn-primary text-sm">Volunteer</Link>
         </div>
 
         <!-- Mobile Menu Toggle -->
@@ -93,8 +92,7 @@
         <Link href="/gallery" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Gallery</Link>
         <Link href="/contact" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Contact</Link>
         <div class="flex flex-col space-y-2 pt-2">
-          <a :href="campaign.volunteerUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-sm text-center">Volunteer</a>
-          <a :href="campaign.voterRegistrationUrl" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-sm text-center">Voter Registration</a>
+          <Link href="/volunteer" class="btn-primary w-full text-sm text-center">Volunteer</Link>
         </div>
       </div>
     </div>
@@ -112,8 +110,6 @@ const isScrolled = ref(false)
 const mobileMenuOpen = ref(false)
 const platformsOpen = ref(false)
 const mobilePlatformsOpen = ref(false)
-
-const campaign = computed(() => page.props.campaign || {})
 
 // page.url follows Inertia navigation; strip the query string
 const currentPath = computed(() => (page.url || '').split('?')[0])
