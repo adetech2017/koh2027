@@ -114,7 +114,7 @@ const page = usePage()
 const campaign = computed(() => page.props.campaign || {})
 
 const socials = [
-  { name: 'Facebook', url: 'https://facebook.com/KadriObafemiHamzat' },
+  { name: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61595059767984' },
   { name: 'X', url: 'https://x.com/OfficialKOH2027' },
   { name: 'Instagram', url: 'https://instagram.com/OfficialKOH2027' },
   { name: 'YouTube', url: 'https://youtube.com/@KadriObafemiHamzatOfficial' },

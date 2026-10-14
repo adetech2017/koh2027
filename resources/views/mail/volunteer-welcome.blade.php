@@ -24,10 +24,10 @@ Our campaign team will review your volunteer registration and reach out to you s
 
 Follow us on social media to stay updated:
 
-- Facebook: @KadriObafemiHamzat
-- Twitter/X: @KOHforLagos
-- Instagram: @kohforlakosstate
-- TikTok: @KadriForLagos
+- Facebook: @OfficialKOH2027
+- Twitter/X: @OfficialKOH2027
+- Instagram: @OfficialKOH2027
+- TikTok: @OfficialKOH2027
 
 Together, we will build a better Lagos!
 
