@@ -10,6 +10,7 @@ use App\Models\NewsArticle;
 use App\Models\PlatformPillar;
 use App\Observers\ContentObserver;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -30,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Short names in polymorphic columns (fleet audit log actors and subjects)
+        Relation::morphMap([
+            'fleet_admin' => \App\Models\Fleet\FleetAdmin::class,
+            'fleet_beneficiary' => \App\Models\Fleet\Beneficiary::class,
+        ]);
+
         RateLimiter::for('contact', function (Request $request) {
             // A readable form error instead of a bare 429 page
             return Limit::perHour(5)->by($request->ip())->response(
@@ -53,6 +60,31 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('manifesto-chat', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Fleet app: WhatsApp login codes cost money per message, so limit by number and by connection
+        RateLimiter::for('fleet-otp', function (Request $request) {
+            // Normalised, so 0803... and +234803... count as the same number
+            $phone = \App\Support\Fleet\PhoneNumber::normalize($request->input('phone')) ?? 'raw:'.$request->input('phone');
+            $message = fn () => response()->json(['message' => 'Too many code requests. Please wait a few minutes before trying again.'], 429);
+
+            return [
+                Limit::perMinute(1)->by('fleet-otp-phone:'.$phone)->response($message),
+                Limit::perHour(5)->by('fleet-otp-phone-hour:'.$phone)->response($message),
+                Limit::perHour(30)->by('fleet-otp-ip:'.$request->ip())->response($message),
+            ];
+        });
+
+        RateLimiter::for('fleet-otp-verify', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip())->response(
+                fn () => response()->json(['message' => 'Too many attempts. Please wait a minute and try again.'], 429)
+            );
+        });
+
+        RateLimiter::for('fleet-admin-login', function (Request $request) {
+            return Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip())->response(
+                fn () => response()->json(['message' => 'Too many sign-in attempts. Please wait a minute and try again.'], 429)
+            );
         });
 
         Gate::define('manage-content', fn ($user) => $user->canManageContent());

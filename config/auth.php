@@ -42,6 +42,17 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Fleet app (fleet subdomain): its own admins and the vehicle beneficiaries
+        'fleet_admin' => [
+            'driver' => 'session',
+            'provider' => 'fleet_admins',
+        ],
+
+        'fleet_beneficiary' => [
+            'driver' => 'session',
+            'provider' => 'fleet_beneficiaries',
+        ],
     ],
 
     /*
@@ -65,6 +76,16 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'fleet_admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Fleet\FleetAdmin::class,
+        ],
+
+        'fleet_beneficiaries' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Fleet\Beneficiary::class,
         ],
 
         // 'users' => [
