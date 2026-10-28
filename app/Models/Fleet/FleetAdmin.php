@@ -42,6 +42,15 @@ class FleetAdmin extends Authenticatable
         return $this->role === 'super_admin';
     }
 
+    /**
+     * Super admins and fleet officers manage vehicles, beneficiaries, handovers and recalls;
+     * reviewers can look but not change them.
+     */
+    public function canManageFleet(): bool
+    {
+        return in_array($this->role, ['super_admin', 'fleet_officer']);
+    }
+
     public function toApi(): array
     {
         return [
@@ -49,6 +58,7 @@ class FleetAdmin extends Authenticatable
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role,
+            'active' => $this->isActive(),
             'last_login_at' => $this->last_login_at?->toIso8601String(),
         ];
     }

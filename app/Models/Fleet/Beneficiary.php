@@ -6,6 +6,8 @@ use Database\Factories\Fleet\BeneficiaryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -42,6 +44,19 @@ class Beneficiary extends Authenticatable
         return $this->deactivated_at === null;
     }
 
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    public function currentAssignment(): HasOne
+    {
+        return $this->hasOne(Assignment::class)->where('status', 'active')->latestOfMany();
+    }
+
+    /**
+     * What the beneficiary app sees about its own user.
+     */
     public function toApi(): array
     {
         return [
@@ -50,6 +65,24 @@ class Beneficiary extends Authenticatable
             'phone' => $this->phone,
             'lga' => $this->lga,
             'ward' => $this->ward,
+        ];
+    }
+
+    /**
+     * The full record, for fleet admins.
+     */
+    public function toAdminApi(): array
+    {
+        return $this->toApi() + [
+            'alt_phone' => $this->alt_phone,
+            'email' => $this->email,
+            'address' => $this->address,
+            'id_type' => $this->id_type,
+            'id_number' => $this->id_number,
+            'notes' => $this->notes,
+            'active' => $this->isActive(),
+            'last_login_at' => $this->last_login_at?->toIso8601String(),
+            'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
 }

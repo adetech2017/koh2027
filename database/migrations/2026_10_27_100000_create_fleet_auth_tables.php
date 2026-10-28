@@ -51,7 +51,9 @@ return new class extends Migration
             $table->string('phone', 20)->index();
             $table->string('code_hash');
             $table->unsignedTinyInteger('attempts')->default(0);
-            $table->timestamp('expires_at');
+            // datetime, not timestamp: on MySQL/MariaDB with explicit_defaults_for_timestamp off, a
+            // NOT NULL timestamp silently gets ON UPDATE CURRENT_TIMESTAMP and would reset on every update
+            $table->dateTime('expires_at');
             $table->timestamp('consumed_at')->nullable();
             $table->string('ip', 45)->nullable();
             $table->timestamps();

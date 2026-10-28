@@ -3,15 +3,19 @@ import { NavLink, Outlet } from 'react-router';
 import { api } from '../shared/api';
 import { Button, Logo } from '../shared/ui';
 import { useAuth } from './auth';
+import { OptionsProvider } from './options';
+import { ROLE_LABELS } from './pages/Admins';
 
-// Vehicles, beneficiaries, handovers and evaluations are added here as each phase lands
-const NAV = [{ to: '/', label: 'Dashboard', end: true }];
-
-const ROLE_LABELS = {
-    super_admin: 'Super admin',
-    fleet_officer: 'Fleet officer',
-    reviewer: 'Reviewer',
-};
+const NAV = [
+    { to: '/', label: 'Dashboard', end: true },
+    { to: '/vehicles', label: 'Vehicles' },
+    { to: '/beneficiaries', label: 'Beneficiaries' },
+    { to: '/assignments', label: 'Assignments' },
+    { to: '/evaluations', label: 'Evaluations' },
+    { to: '/recalls', label: 'Recalls' },
+    { to: '/import', label: 'Import', roles: ['super_admin', 'fleet_officer'] },
+    { to: '/admins', label: 'Admins', roles: ['super_admin'] },
+];
 
 export default function Layout() {
     const { user, setUser } = useAuth();
@@ -33,7 +37,7 @@ export default function Layout() {
                     <Logo subtitle="Admin" />
                 </div>
                 <nav className="space-y-1 p-3">
-                    {NAV.map((item) => (
+                    {NAV.filter((item) => !item.roles || item.roles.includes(user.role)).map((item) => (
                         <NavLink
                             key={item.to}
                             to={item.to}
@@ -76,8 +80,10 @@ export default function Layout() {
                     </div>
                 </header>
 
-                <main className="px-4 py-6 lg:px-8">
-                    <Outlet />
+                <main className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
+                    <OptionsProvider>
+                        <Outlet />
+                    </OptionsProvider>
                 </main>
             </div>
         </div>

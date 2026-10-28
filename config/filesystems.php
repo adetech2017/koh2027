@@ -38,6 +38,14 @@ return [
             'report' => false,
         ],
 
+        // Fleet app uploads (see config/fleet.php 'disk')
+        'fleet' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/fleet'),
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

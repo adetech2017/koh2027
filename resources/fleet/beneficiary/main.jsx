@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AuthProvider, GuestOnly, RequireAuth } from './auth';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import Evaluate from './pages/Evaluate';
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -12,6 +13,7 @@ createRoot(document.getElementById('root')).render(
                 <Routes>
                     <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
                     <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+                    <Route path="/evaluate" element={<RequireAuth><Evaluate /></RequireAuth>} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </AuthProvider>

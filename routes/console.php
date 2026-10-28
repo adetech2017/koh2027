@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('crm:weekly-digest')->weeklyOn(1, '08:00');
 Schedule::command('analytics:prune')->dailyAt('03:00');
+Schedule::command('fleet:sync-evaluations')->hourly();
