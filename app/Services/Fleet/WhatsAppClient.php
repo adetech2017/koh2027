@@ -2,6 +2,8 @@
 
 namespace App\Services\Fleet;
 
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -15,6 +17,14 @@ use RuntimeException;
  */
 class WhatsAppClient
 {
+    /**
+     * Log driver: nothing reaches Meta, and templates are treated as approved straight away.
+     */
+    public function isFake(): bool
+    {
+        return config('fleet.whatsapp.driver') === 'log';
+    }
+
     /**
      * Send a login code using an "Authentication" template. Meta requires the code in the
      * body and again as the copy-code button's parameter.
@@ -39,37 +49,119 @@ class WhatsAppClient
      * @param  array<int, array<string, mixed>>  $components
      * @return string|null The WhatsApp message id
      */
-    public function sendTemplate(string $phone, string $template, array $components = []): ?string
+    public function sendTemplate(string $phone, string $template, array $components = [], ?string $language = null): ?string
     {
-        $config = config('fleet.whatsapp');
+        $language ??= config('fleet.whatsapp.language');
 
-        if ($config['driver'] === 'log') {
-            Log::info('[fleet whatsapp] '.$template.' → '.$phone, ['components' => $components]);
+        if ($this->isFake()) {
+            Log::info('[fleet whatsapp] '.$template.' ('.$language.') → '.$phone, ['components' => $components]);
 
             return null;
         }
 
-        if (!$config['phone_number_id'] || !$config['access_token']) {
-            throw new RuntimeException('WhatsApp is not configured: set FLEET_WHATSAPP_PHONE_NUMBER_ID and FLEET_WHATSAPP_ACCESS_TOKEN.');
+        if (!config('fleet.whatsapp.phone_number_id')) {
+            throw new RuntimeException('WhatsApp is not configured: set FLEET_WHATSAPP_PHONE_NUMBER_ID.');
         }
 
-        $response = Http::withToken($config['access_token'])
-            ->timeout(15)
-            ->post("https://graph.facebook.com/{$config['api_version']}/{$config['phone_number_id']}/messages", [
-                'messaging_product' => 'whatsapp',
-                'to' => ltrim($phone, '+'),
-                'type' => 'template',
-                'template' => [
-                    'name' => $template,
-                    'language' => ['code' => $config['language']],
-                    'components' => $components,
-                ],
-            ]);
+        $response = $this->graph()->post(config('fleet.whatsapp.phone_number_id').'/messages', [
+            'messaging_product' => 'whatsapp',
+            'to' => ltrim($phone, '+'),
+            'type' => 'template',
+            'template' => [
+                'name' => $template,
+                'language' => ['code' => $language],
+                'components' => $components,
+            ],
+        ]);
 
-        if ($response->failed()) {
-            throw new RuntimeException('WhatsApp send failed ('.$response->status().'): '.$response->json('error.message', $response->body()));
-        }
+        $this->throwIfFailed($response, 'WhatsApp send failed');
 
         return $response->json('messages.0.id');
+    }
+
+    /**
+     * Submit a body-only template for Meta's review.
+     *
+     * @param  array<int, string>  $examples  Sample values for {{1}}, {{2}}... (Meta requires them)
+     * @return array{status: string, reason: ?string} Meta's status, e.g. PENDING or APPROVED
+     */
+    public function createTemplate(string $name, string $language, string $category, string $body, array $examples): array
+    {
+        $response = $this->graph()->post($this->businessAccountId().'/message_templates', [
+            'name' => $name,
+            'language' => $language,
+            'category' => $category,
+            'components' => [[
+                'type' => 'BODY',
+                'text' => $body,
+                'example' => ['body_text' => [$examples]],
+            ]],
+        ]);
+
+        $this->throwIfFailed($response, 'Meta did not accept the template');
+
+        return ['status' => (string) $response->json('status', 'PENDING'), 'reason' => null];
+    }
+
+    /**
+     * A template's status and wording as Meta has it, or null when there's no such template.
+     *
+     * @return array{status: string, reason: ?string, body: ?string}|null
+     */
+    public function findTemplate(string $name, string $language): ?array
+    {
+        $response = $this->graph()->get($this->businessAccountId().'/message_templates', [
+            'name' => $name,
+            'fields' => 'name,language,status,category,components,rejected_reason',
+            'limit' => 100,
+        ]);
+
+        $this->throwIfFailed($response, 'Could not check the template with Meta');
+
+        // The name filter also matches partial names, so pick the exact one
+        $template = collect($response->json('data', []))
+            ->first(fn ($t) => ($t['name'] ?? null) === $name && ($t['language'] ?? null) === $language);
+
+        if (!$template) {
+            return null;
+        }
+
+        $reason = $template['rejected_reason'] ?? null;
+
+        return [
+            'status' => (string) $template['status'],
+            'reason' => $reason && $reason !== 'NONE' ? $reason : null,
+            'body' => collect($template['components'] ?? [])->firstWhere('type', 'BODY')['text'] ?? null,
+        ];
+    }
+
+    private function graph(): PendingRequest
+    {
+        $config = config('fleet.whatsapp');
+
+        if (!$config['access_token']) {
+            throw new RuntimeException('WhatsApp is not configured: set FLEET_WHATSAPP_ACCESS_TOKEN.');
+        }
+
+        return Http::withToken($config['access_token'])
+            ->baseUrl("https://graph.facebook.com/{$config['api_version']}/")
+            ->acceptJson()
+            ->timeout(15);
+    }
+
+    private function businessAccountId(): string
+    {
+        return config('fleet.whatsapp.business_account_id')
+            ?: throw new RuntimeException('Set FLEET_WHATSAPP_BUSINESS_ACCOUNT_ID (WhatsApp Manager → Account tools → Business account ID) to manage templates from here.');
+    }
+
+    private function throwIfFailed(Response $response, string $what): void
+    {
+        if ($response->failed()) {
+            // error_user_msg is Meta's human-readable explanation when there is one
+            $message = $response->json('error.error_user_msg') ?: $response->json('error.message', $response->body());
+
+            throw new RuntimeException("{$what} ({$response->status()}): {$message}");
+        }
     }
 }

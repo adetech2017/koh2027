@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { qs } from '../../../shared/api';
 import { useApi, useDebounced } from '../../../shared/hooks';
-import { Badge, Card, EmptyState, Field, LoadError, Loading, PageHeader, Pagination, SelectField, formatDate } from '../../../shared/ui';
+import { Badge, Button, Card, EmptyState, Field, LoadError, Loading, PageHeader, Pagination, SelectField, formatDate } from '../../../shared/ui';
 import { useOptions } from '../../options';
 import { FLAGS, PROCESSING, TRUST, TrustBadge } from './labels';
 
@@ -10,6 +10,7 @@ export default function EvaluationList() {
     const options = useOptions();
     const [params] = useSearchParams();
     const [filters, setFilters] = useState({
+        review_status: params.get('review_status') ?? '',
         search: '',
         trust_level: '',
         lga: '',
@@ -24,7 +25,24 @@ export default function EvaluationList() {
 
     return (
         <>
-            <PageHeader title="Evaluations" subtitle="Two-weekly videos from beneficiaries, newest first." />
+            <PageHeader
+                title="Evaluations"
+                subtitle={filters.review_status === 'pending' ? 'Waiting for review, oldest first.' : 'Two-weekly videos from beneficiaries, newest first.'}
+                actions={<a href="/api/v1/admin/exports/evaluations"><Button variant="secondary">Export CSV</Button></a>}
+            />
+
+            <div className="mb-4 flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1 text-sm">
+                {[['pending', 'To review'], ['', 'All'], ['approved', 'Approved'], ['rejected', 'Rejected']].map(([value, text]) => (
+                    <button
+                        key={text}
+                        type="button"
+                        onClick={() => setFilters({ ...filters, review_status: value, page: 1 })}
+                        className={`rounded-md px-3 py-1.5 font-medium ${filters.review_status === value ? 'bg-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                    >
+                        {text}
+                    </button>
+                ))}
+            </div>
 
             <div className="mb-4 grid gap-3 sm:grid-cols-3">
                 <Field id="search" label="Search" placeholder="Plate number or beneficiary" value={filters.search} onChange={set('search')} />
@@ -41,7 +59,9 @@ export default function EvaluationList() {
             {error ? <LoadError error={error} onRetry={reload} /> : (
                 <Card className="overflow-hidden [&>div]:p-0">
                     {loading && !data ? <Loading /> : data.data.length === 0 ? (
-                        <EmptyState title="No evaluations yet">They appear here as beneficiaries submit them.</EmptyState>
+                        <EmptyState title={filters.review_status === 'pending' ? 'Nothing waiting for review' : 'No evaluations yet'}>
+                            {filters.review_status === 'pending' ? 'All caught up.' : 'They appear here as beneficiaries submit them.'}
+                        </EmptyState>
                     ) : (
                         <ul className="divide-y divide-slate-100">
                             {data.data.map((e) => (
@@ -58,6 +78,8 @@ export default function EvaluationList() {
                                             <div className="mt-1 flex flex-wrap items-center gap-2">
                                                 <TrustBadge level={e.trust_level} />
                                                 {PROCESSING[e.processing_status] && <Badge tone={PROCESSING[e.processing_status][0]}>{PROCESSING[e.processing_status][1]}</Badge>}
+                                                {e.review_status === 'approved' && <Badge tone="green">Approved</Badge>}
+                                                {e.review_status === 'rejected' && <Badge tone="red">Rejected</Badge>}
                                                 {e.trust_flags.length > 0 && (
                                                     <span className="text-xs text-amber-700" title={e.trust_flags.map((f) => FLAGS[f] ?? f).join('\n')}>
                                                         {e.trust_flags.length} flag{e.trust_flags.length === 1 ? '' : 's'}

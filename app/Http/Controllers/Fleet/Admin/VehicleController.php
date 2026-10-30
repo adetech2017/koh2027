@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Fleet\Assignment;
 use App\Models\Fleet\AuditLog;
 use App\Models\Fleet\Vehicle;
+use App\Support\Fleet\VehicleModelRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -65,6 +66,10 @@ class VehicleController extends Controller
     public function update(Request $request, Vehicle $vehicle): JsonResponse
     {
         $this->normalisePlate($request);
+        // A new type or make must still fit the model, so check the saved one when no model is sent
+        if (($request->has('vehicle_type') || $request->has('make')) && !$request->has('model')) {
+            $request->merge(['model' => $vehicle->model]);
+        }
         $data = $request->validate(static::partial(static::rules($vehicle)) + [
             // "assigned" comes from the handover form, never set by hand
             'status' => ['sometimes', Rule::in(['available', 'maintenance', 'retired'])],
@@ -96,10 +101,11 @@ class VehicleController extends Controller
         return [
             'plate_number' => ['required', 'string', 'min:4', 'max:20', Rule::unique('fleet_vehicles', 'plate_number')->ignore($ignore?->id)],
             'vehicle_type' => ['required', Rule::in(array_keys(config('fleet.vehicle_types')))],
-            'make' => ['required', 'string', 'max:60'],
-            'model' => ['required', 'string', 'max:60'],
+            'make' => ['required', 'string', Rule::exists('fleet_vehicle_makes', 'name')],
+            'model' => ['required', 'string', new VehicleModelRule($ignore?->make, $ignore?->vehicle_type)],
             'year' => ['nullable', 'integer', 'min:1980', 'max:'.(now()->year + 1)],
-            'colour' => ['nullable', 'string', 'max:40'],
+            // A colour recorded before the list existed stays valid on that vehicle
+            'colour' => ['nullable', Rule::in(array_filter([...config('fleet.colours'), $ignore?->colour]))],
             'chassis_number' => ['nullable', 'string', 'max:40', Rule::unique('fleet_vehicles', 'chassis_number')->ignore($ignore?->id)],
             'engine_number' => ['nullable', 'string', 'max:40'],
             'branding' => ['nullable', 'string', 'max:255'],
@@ -112,6 +118,8 @@ class VehicleController extends Controller
         return [
             'plate_number.unique' => 'A vehicle with this plate number is already registered.',
             'chassis_number.unique' => 'A vehicle with this chassis number is already registered.',
+            'make.exists' => 'Choose a make from the list. A super admin can add missing ones under Makes & models.',
+            'colour.in' => 'Choose a colour from the list.',
         ];
     }
 

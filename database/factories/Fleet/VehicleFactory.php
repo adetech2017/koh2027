@@ -18,9 +18,9 @@ class VehicleFactory extends Factory
             'plate_number' => fake()->unique()->bothify('???###??'),
             'vehicle_type' => 'car',
             'make' => 'Toyota',
-            'model' => fake()->randomElement(['Corolla', 'Camry', 'Hiace', 'Hilux']),
+            'model' => fake()->randomElement(['Corolla', 'Camry', 'Yaris']),
             'year' => fake()->numberBetween(2015, 2025),
-            'colour' => fake()->safeColorName(),
+            'colour' => fake()->randomElement(config('fleet.colours')),
             'status' => 'available',
         ];
     }

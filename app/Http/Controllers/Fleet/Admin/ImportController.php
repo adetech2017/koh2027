@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Fleet\AuditLog;
 use App\Models\Fleet\Beneficiary;
 use App\Models\Fleet\Vehicle;
+use App\Models\Fleet\VehicleMake;
 use App\Services\Fleet\CsvReader;
 use App\Support\Fleet\PhoneNumber;
 use Illuminate\Http\JsonResponse;
@@ -23,12 +24,12 @@ class ImportController extends Controller
     private const MAX_ROWS = 2000;
 
     private const COLUMNS = [
-        'beneficiaries' => ['full_name', 'phone', 'alt_phone', 'email', 'address', 'lga', 'ward', 'id_type', 'id_number', 'notes'],
+        'beneficiaries' => ['full_name', 'phone', 'alt_phone', 'email', 'address', 'lga', 'ward', 'directorate', 'sub_directorate', 'id_type', 'id_number', 'notes'],
         'vehicles' => ['plate_number', 'vehicle_type', 'make', 'model', 'year', 'colour', 'chassis_number', 'engine_number', 'branding', 'notes'],
     ];
 
     private const EXAMPLES = [
-        'beneficiaries' => ['Adaeze Okafor', '0803 123 4567', '', 'adaeze@example.com', '12 Allen Avenue', 'Ikeja', 'Ward 3', 'nin', '12345678901', ''],
+        'beneficiaries' => ['Adaeze Okafor', '0803 123 4567', '', 'adaeze@example.com', '12 Allen Avenue', 'Ikeja', 'Ward 3', '', '', 'nin', '12345678901', ''],
         'vehicles' => ['KJA 123 XY', 'car', 'Toyota', 'Corolla', '2020', 'White', 'JTDBR32E720123456', '', 'Full wrap, KOH 2027', ''],
     ];
 
@@ -86,9 +87,16 @@ class ImportController extends Controller
         $records = $errors = $seen = [];
         $lgas = collect(config('fleet.lgas'))->keyBy(fn ($lga) => strtolower($lga));
         $idTypes = collect(config('fleet.id_types'))->mapWithKeys(fn ($label, $key) => [strtolower($label) => $key, $key => $key]);
+        $directorates = collect(config('fleet.directorates'))->keys()->keyBy(fn ($name) => strtolower($name));
+        $subDirectorates = collect(config('fleet.directorates'))->flatten()->keyBy(fn ($name) => strtolower($name));
 
         foreach ($rows as $line => $row) {
             $row = array_intersect_key($row, array_flip(self::COLUMNS['beneficiaries']));
+            foreach (['directorate' => $directorates, 'sub_directorate' => $subDirectorates] as $field => $names) {
+                if ($row[$field] ?? null) {
+                    $row[$field] = $names[strtolower(trim($row[$field]))] ?? $row[$field];
+                }
+            }
             foreach (['phone', 'alt_phone'] as $field) {
                 if ($row[$field] ?? null) {
                     $row[$field] = PhoneNumber::normalize($row[$field]) ?? $row[$field];
@@ -123,6 +131,8 @@ class ImportController extends Controller
     {
         $records = $errors = $seenPlates = $seenChassis = [];
         $types = collect(config('fleet.vehicle_types'))->mapWithKeys(fn ($label, $key) => [strtolower($label) => $key, $key => $key]);
+        $makes = VehicleMake::with('models')->get()->keyBy(fn ($make) => mb_strtolower($make->name));
+        $colours = collect(config('fleet.colours'))->keyBy(fn ($colour) => mb_strtolower($colour));
 
         foreach ($rows as $line => $row) {
             $row = array_intersect_key($row, array_flip(self::COLUMNS['vehicles']));
@@ -132,6 +142,17 @@ class ImportController extends Controller
             }
             if ($row['vehicle_type'] ?? null) {
                 $row['vehicle_type'] = $types[strtolower($row['vehicle_type'])] ?? strtolower($row['vehicle_type']);
+            }
+            // "toyota", "COROLLA", "white" → the names on the list
+            $make = ($row['make'] ?? null) ? $makes[mb_strtolower(trim($row['make']))] ?? null : null;
+            if ($make) {
+                $row['make'] = $make->name;
+                if ($row['model'] ?? null) {
+                    $row['model'] = $make->models->first(fn ($m) => mb_strtolower($m->name) === mb_strtolower(trim($row['model'])))?->name ?? $row['model'];
+                }
+            }
+            if ($row['colour'] ?? null) {
+                $row['colour'] = $colours[mb_strtolower(trim($row['colour']))] ?? $row['colour'];
             }
 
             $messages = Validator::make($row, VehicleController::rules(), VehicleController::messages())->errors()->all();

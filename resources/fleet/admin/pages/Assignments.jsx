@@ -33,14 +33,19 @@ export default function Assignments() {
             <PageHeader
                 title="Assignments"
                 subtitle="Vehicles out with beneficiaries, and past handovers."
-                actions={canManage && (
+                actions={(
                     <>
-                        {selected.length > 0 && (
-                            <Button onClick={() => navigate('/recalls/new', { state: { assignmentIds: selected } })}>
-                                Recall {selected.length} selected
-                            </Button>
+                        <a href="/api/v1/admin/exports/assignments"><Button variant="secondary">Export CSV</Button></a>
+                        {canManage && (
+                            <>
+                                {selected.length > 0 && (
+                                    <Button onClick={() => navigate('/recalls/new', { state: { assignmentIds: selected } })}>
+                                        Recall {selected.length} selected
+                                    </Button>
+                                )}
+                                <Link to="/handovers/new"><Button variant={selected.length ? 'secondary' : 'primary'}>Hand over a vehicle</Button></Link>
+                            </>
                         )}
-                        <Link to="/handovers/new"><Button variant={selected.length ? 'secondary' : 'primary'}>Hand over a vehicle</Button></Link>
                     </>
                 )}
             />

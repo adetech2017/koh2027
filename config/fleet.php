@@ -22,6 +22,13 @@ return [
         'Lagos Mainland', 'Mushin', 'Ojo', 'Oshodi-Isolo', 'Shomolu', 'Surulere',
     ],
 
+    // Campaign directorates, each mapped to its sub-directorates ([] when it has none).
+    // Beneficiaries store these names as text, so renaming one leaves existing records on the old name.
+    'directorates' => [
+        // 'Directorate of Mobilisation' => ['Youth Mobilisation', 'Women Mobilisation'],
+        // 'Directorate of Media' => [],
+    ],
+
     'vehicle_types' => [
         'car' => 'Car',
         'suv' => 'SUV',
@@ -29,6 +36,12 @@ return [
         'pickup' => 'Pickup',
         'motorcycle' => 'Motorcycle',
         'tricycle' => 'Tricycle (keke)',
+    ],
+
+    // Makes and models live in the fleet_vehicle_makes/models tables (Admin → Makes & models)
+    'colours' => [
+        'White', 'Black', 'Silver', 'Grey', 'Blue', 'Red', 'Green', 'Yellow', 'Gold',
+        'Brown', 'Beige', 'Orange', 'Maroon', 'Purple', 'Champagne',
     ],
 
     'id_types' => [
@@ -90,11 +103,15 @@ return [
         'driver' => env('FLEET_WHATSAPP_DRIVER', 'log'),
         'api_version' => env('FLEET_WHATSAPP_API_VERSION', 'v21.0'),
         'phone_number_id' => env('FLEET_WHATSAPP_PHONE_NUMBER_ID'),
+        // WhatsApp Business Account ID: needed to submit and check message templates from the admin
+        'business_account_id' => env('FLEET_WHATSAPP_BUSINESS_ACCOUNT_ID'),
         'access_token' => env('FLEET_WHATSAPP_ACCESS_TOKEN'),
         'templates' => [
-            // An approved "Authentication" category template with a copy-code button
+            // An approved "Authentication" category template with a copy-code button.
+            // The other messages' templates are managed in the admin (fleet_message_templates).
             'otp' => env('FLEET_WHATSAPP_OTP_TEMPLATE', 'fleet_login_code'),
         ],
+        // Language of the login code template, and the default for new templates
         'language' => env('FLEET_WHATSAPP_LANGUAGE', 'en'),
     ],
 

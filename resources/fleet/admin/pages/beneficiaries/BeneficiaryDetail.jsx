@@ -5,6 +5,7 @@ import { useApi } from '../../../shared/hooks';
 import { Alert, Button, Card, Details, LoadError, Loading, PageHeader, StatusBadge, formatDate } from '../../../shared/ui';
 import { useCanManage, useOptions } from '../../options';
 import AssignmentHistory from '../AssignmentHistory';
+import { MESSAGE_TYPES, MessageStatus } from '../messages/labels';
 
 export default function BeneficiaryDetail() {
     const { id } = useParams();
@@ -17,7 +18,7 @@ export default function BeneficiaryDetail() {
     if (error) return <LoadError error={error} onRetry={reload} />;
     if (!data) return <Loading />;
 
-    const { beneficiary: b, assignments } = data;
+    const { beneficiary: b, assignments, notifications } = data;
     const current = assignments.find((a) => a.status !== 'returned');
 
     async function setActive(active) {
@@ -45,6 +46,7 @@ export default function BeneficiaryDetail() {
                         {canManage && (
                             <>
                                 <Link to={`/beneficiaries/${id}/edit`}><Button variant="secondary">Edit</Button></Link>
+                                {b.active && <Link to={`/messages/send?beneficiary=${id}`}><Button variant="secondary">Send WhatsApp message</Button></Link>}
                                 {b.active
                                     ? <Button variant="danger" loading={saving} onClick={() => setActive(false)}>Suspend</Button>
                                     : <Button variant="secondary" loading={saving} onClick={() => setActive(true)}>Reinstate</Button>}
@@ -65,6 +67,7 @@ export default function BeneficiaryDetail() {
                             ['Email', b.email],
                             ['Address', b.address],
                             ['LGA / Ward', [b.lga, b.ward].filter(Boolean).join(' / ')],
+                            ['Directorate', [b.directorate, b.sub_directorate].filter(Boolean).join(' / ')],
                             ['ID', b.id_number && `${options.id_types[b.id_type] ?? b.id_type ?? ''} ${b.id_number}`],
                             ['Last signed in', b.last_login_at && formatDate(b.last_login_at, true)],
                             ['Notes', b.notes],
@@ -72,7 +75,7 @@ export default function BeneficiaryDetail() {
                     </Card>
                     <AssignmentHistory assignments={assignments} with="vehicle" />
                 </div>
-                <div>
+                <div className="space-y-6">
                     <Card title="Current vehicle">
                         {current ? (
                             <div className="space-y-3 text-sm">
@@ -85,8 +88,40 @@ export default function BeneficiaryDetail() {
                             <p className="text-sm text-slate-500">No vehicle at the moment.</p>
                         )}
                     </Card>
+                    <Messages beneficiaryId={id} notifications={notifications} />
                 </div>
             </div>
         </>
+    );
+}
+
+function Messages({ beneficiaryId, notifications }) {
+    return (
+        <Card
+            title="WhatsApp messages"
+            actions={notifications.length > 0 && <Link to={`/messages?beneficiary_id=${beneficiaryId}`} className="text-sm text-primary hover:underline">See all</Link>}
+            className="[&>div:last-child]:p-0"
+        >
+            {notifications.length === 0 ? (
+                <p className="p-5 text-sm text-slate-500">None yet.</p>
+            ) : (
+                <ul className="divide-y divide-slate-100 text-sm">
+                    {notifications.map((n) => (
+                        <li key={n.id} className="px-5 py-3">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium">{n.title ?? MESSAGE_TYPES[n.type] ?? n.type}</span>
+                                <MessageStatus status={n.status} />
+                            </div>
+                            {n.body && <p className="mt-1 line-clamp-3 text-slate-700" title={n.body}>{n.body}</p>}
+                            <div className="mt-1 text-xs text-slate-500">
+                                {formatDate(n.sent_at ?? n.created_at, true)}
+                                {n.sent_by && ` · ${n.sent_by}`}
+                            </div>
+                            {n.error && <div className="mt-1 text-xs break-words text-red-700">{n.error}</div>}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Card>
     );
 }

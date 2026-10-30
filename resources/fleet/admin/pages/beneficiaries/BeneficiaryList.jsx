@@ -18,10 +18,15 @@ export default function BeneficiaryList() {
         <>
             <PageHeader
                 title="Beneficiaries"
-                actions={canManage && (
+                actions={(
                     <>
-                        <Link to="/import?type=beneficiaries"><Button variant="secondary">Import CSV</Button></Link>
-                        <Link to="/beneficiaries/new"><Button>Add beneficiary</Button></Link>
+                        <a href="/api/v1/admin/exports/beneficiaries"><Button variant="secondary">Export CSV</Button></a>
+                        {canManage && (
+                            <>
+                                <Link to="/import?type=beneficiaries"><Button variant="secondary">Import CSV</Button></Link>
+                                <Link to="/beneficiaries/new"><Button>Add beneficiary</Button></Link>
+                            </>
+                        )}
                     </>
                 )}
             />

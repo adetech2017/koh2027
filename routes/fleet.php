@@ -49,6 +49,7 @@ Route::prefix('api/v1')->name('api.')->group(function () {
             Route::get('beneficiaries', [Admin\BeneficiaryController::class, 'index'])->name('beneficiaries.index');
             Route::get('beneficiaries/{beneficiary}', [Admin\BeneficiaryController::class, 'show'])->name('beneficiaries.show')->withTrashed();
             Route::get('vehicles', [Admin\VehicleController::class, 'index'])->name('vehicles.index');
+            Route::get('vehicle-catalog', [Admin\VehicleCatalogController::class, 'index'])->name('vehicle-catalog.index');
             Route::get('vehicles/{vehicle}', [Admin\VehicleController::class, 'show'])->name('vehicles.show')->withTrashed();
             Route::get('assignments', [Admin\AssignmentController::class, 'index'])->name('assignments.index');
             Route::get('assignments/{assignment}', [Admin\AssignmentController::class, 'show'])->name('assignments.show');
@@ -60,6 +61,14 @@ Route::prefix('api/v1')->name('api.')->group(function () {
             Route::get('evaluations/{evaluation}', [Admin\EvaluationController::class, 'show'])->name('evaluations.show');
             Route::get('evaluations/{evaluation}/video', [Admin\EvaluationController::class, 'video'])->name('evaluations.video');
             Route::get('evaluations/{evaluation}/thumbnail', [Admin\EvaluationController::class, 'thumbnail'])->name('evaluations.thumbnail');
+            // Every role reviews; reviewers exist for this
+            Route::post('evaluations/{evaluation}/review', [Admin\EvaluationController::class, 'review'])->name('evaluations.review');
+            Route::get('compliance', [Admin\ReportController::class, 'compliance'])->name('compliance');
+            Route::get('vehicles/{vehicle}/mileage', [Admin\ReportController::class, 'mileage'])->name('vehicles.mileage')->withTrashed();
+            Route::get('exports/{type}', [Admin\ReportController::class, 'export'])->name('exports')
+                ->whereIn('type', ['vehicles', 'beneficiaries', 'assignments', 'evaluations', 'compliance']);
+            Route::get('messages', [Admin\MessageController::class, 'index'])->name('messages.index');
+            Route::get('messages/templates', [Admin\MessageController::class, 'templates'])->name('messages.templates');
             Route::get('recalls', [Admin\RecallController::class, 'index'])->name('recalls.index');
             Route::get('recalls/{recall}', [Admin\RecallController::class, 'show'])->name('recalls.show');
             Route::get('import/{type}/template', [Admin\ImportController::class, 'template'])->name('import.template')->whereIn('type', ['beneficiaries', 'vehicles']);
@@ -74,9 +83,26 @@ Route::prefix('api/v1')->name('api.')->group(function () {
                 Route::post('handovers', [Admin\HandoverController::class, 'store'])->name('handovers.store');
                 Route::post('assignments/{assignment}/return', [Admin\HandoverController::class, 'storeReturn'])->name('assignments.return');
                 Route::post('recalls', [Admin\RecallController::class, 'store'])->name('recalls.store');
+                Route::get('messages/audience', [Admin\MessageController::class, 'audience'])->name('messages.audience');
+                Route::post('messages/send', [Admin\MessageController::class, 'send'])->name('messages.send')->middleware('throttle:20,60');
             });
 
             Route::middleware('fleet.role:super_admin')->group(function () {
+                // Message wording goes to Meta for approval
+                Route::post('messages/templates', [Admin\MessageController::class, 'storeTemplate'])->name('messages.templates.store');
+                Route::patch('messages/templates/{template}', [Admin\MessageController::class, 'updateTemplate'])->name('messages.templates.update');
+                Route::post('messages/templates/{template}/wording', [Admin\MessageController::class, 'updateWording'])->name('messages.templates.wording');
+                Route::post('messages/templates/{template}/refresh', [Admin\MessageController::class, 'refreshTemplate'])->name('messages.templates.refresh');
+                Route::delete('messages/templates/{template}/draft', [Admin\MessageController::class, 'discardDraft'])->name('messages.templates.draft');
+                Route::delete('messages/templates/{template}', [Admin\MessageController::class, 'destroyTemplate'])->name('messages.templates.destroy');
+
+                Route::post('vehicle-makes', [Admin\VehicleCatalogController::class, 'storeMake'])->name('vehicle-makes.store');
+                Route::patch('vehicle-makes/{make}', [Admin\VehicleCatalogController::class, 'updateMake'])->name('vehicle-makes.update');
+                Route::delete('vehicle-makes/{make}', [Admin\VehicleCatalogController::class, 'destroyMake'])->name('vehicle-makes.destroy');
+                Route::post('vehicle-makes/{make}/models', [Admin\VehicleCatalogController::class, 'storeModel'])->name('vehicle-models.store');
+                Route::patch('vehicle-models/{model}', [Admin\VehicleCatalogController::class, 'updateModel'])->name('vehicle-models.update');
+                Route::delete('vehicle-models/{model}', [Admin\VehicleCatalogController::class, 'destroyModel'])->name('vehicle-models.destroy');
+
                 Route::get('admins', [Admin\AdminController::class, 'index'])->name('admins.index');
                 Route::post('admins', [Admin\AdminController::class, 'store'])->name('admins.store');
                 Route::patch('admins/{admin}', [Admin\AdminController::class, 'update'])->name('admins.update');

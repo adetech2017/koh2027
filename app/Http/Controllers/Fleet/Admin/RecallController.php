@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Fleet\Assignment;
 use App\Models\Fleet\AuditLog;
 use App\Models\Fleet\Recall;
+use App\Services\Fleet\FleetNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class RecallController extends Controller
         return response()->json(['recall' => $recall->toApi()]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, FleetNotifier $notifier): JsonResponse
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -66,6 +67,8 @@ class RecallController extends Controller
         });
 
         AuditLog::record('recall.created', $recall, ['vehicles' => $recall->assignments()->count()]);
+
+        $recall->assignments()->with('beneficiary', 'vehicle', 'recall')->each(fn (Assignment $assignment) => $notifier->vehicleRecalled($assignment));
 
         return response()->json(['recall' => $this->withProgress(Recall::whereKey($recall->id))->first()->toApi()], 201);
     }

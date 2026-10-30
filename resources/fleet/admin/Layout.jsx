@@ -12,8 +12,11 @@ const NAV = [
     { to: '/beneficiaries', label: 'Beneficiaries' },
     { to: '/assignments', label: 'Assignments' },
     { to: '/evaluations', label: 'Evaluations' },
+    { to: '/compliance', label: 'Compliance' },
     { to: '/recalls', label: 'Recalls' },
+    { to: '/messages', label: 'Messages' },
     { to: '/import', label: 'Import', roles: ['super_admin', 'fleet_officer'] },
+    { to: '/vehicle-catalog', label: 'Makes & models', roles: ['super_admin'] },
     { to: '/admins', label: 'Admins', roles: ['super_admin'] },
 ];
 

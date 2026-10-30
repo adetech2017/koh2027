@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { api } from '../../../shared/api';
 import { useApi } from '../../../shared/hooks';
-import { Alert, Button, Card, Details, LoadError, Loading, PageHeader, StatusBadge } from '../../../shared/ui';
+import { Alert, Button, Card, Details, LoadError, Loading, PageHeader, StatusBadge, formatDate } from '../../../shared/ui';
 import { useCanManage, useOptions } from '../../options';
 import AssignmentHistory from '../AssignmentHistory';
+import { MileageChart } from '../../charts';
 
 export default function VehicleDetail() {
     const { id } = useParams();
@@ -64,6 +65,7 @@ export default function VehicleDetail() {
                             ['Notes', vehicle.notes],
                         ]} />
                     </Card>
+                    <Mileage vehicleId={id} />
                     <AssignmentHistory assignments={assignments} with="beneficiary" />
                 </div>
 
@@ -92,5 +94,50 @@ export default function VehicleDetail() {
                 </div>
             </div>
         </>
+    );
+}
+
+const SOURCES = { handover: 'Handover', return: 'Return', evaluation: 'Evaluation' };
+
+function Mileage({ vehicleId }) {
+    const { data, error, reload } = useApi(`/admin/vehicles/${vehicleId}/mileage`);
+    const [showTable, setShowTable] = useState(false);
+
+    if (error) return <LoadError error={error} onRetry={reload} />;
+    if (!data || data.readings.length === 0) return null;
+
+    const r = data.readings;
+    const driven = r[r.length - 1].km - r[0].km;
+
+    return (
+        <Card
+            title="Mileage"
+            actions={<button type="button" onClick={() => setShowTable(!showTable)} className="text-sm font-medium text-primary hover:underline">{showTable ? 'Show chart' : 'Show table'}</button>}
+        >
+            <p className="mb-3 text-sm text-slate-600">
+                {driven.toLocaleString()} km driven since {formatDate(r[0].date)}, across {r.length} reading{r.length === 1 ? '' : 's'}.
+            </p>
+            {showTable ? (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                        <thead className="text-left text-xs font-medium tracking-wide text-slate-500 uppercase">
+                            <tr><th className="py-2 pr-4">Date</th><th className="py-2 pr-4">Reading</th><th className="py-2 pr-4 text-right">Odometer</th><th className="py-2 text-right">Since previous</th></tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {r.map((reading, i) => (
+                                <tr key={i}>
+                                    <td className="py-2 pr-4 whitespace-nowrap">{formatDate(reading.date)}</td>
+                                    <td className="py-2 pr-4"><Link to={reading.link} className="text-primary hover:underline">{SOURCES[reading.source]}</Link> · {reading.beneficiary}</td>
+                                    <td className="py-2 pr-4 text-right">{reading.km.toLocaleString()} km</td>
+                                    <td className={`py-2 text-right ${i && reading.km < r[i - 1].km ? 'text-red-700' : ''}`}>{i ? `${(reading.km - r[i - 1].km).toLocaleString()} km` : '—'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <MileageChart readings={r} labelFor={(p) => `${SOURCES[p.source]} · ${p.beneficiary}`} />
+            )}
+        </Card>
     );
 }

@@ -14,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 /**
  * Someone a campaign vehicle is handed to. Signs in with a WhatsApp code, so has no password.
  */
-#[Fillable(['full_name', 'phone', 'alt_phone', 'email', 'address', 'lga', 'ward', 'id_type', 'id_number', 'notes'])]
+#[Fillable(['full_name', 'phone', 'alt_phone', 'email', 'address', 'lga', 'ward', 'directorate', 'sub_directorate', 'id_type', 'id_number', 'notes'])]
 #[Hidden(['remember_token'])]
 class Beneficiary extends Authenticatable
 {
@@ -77,6 +77,8 @@ class Beneficiary extends Authenticatable
             'alt_phone' => $this->alt_phone,
             'email' => $this->email,
             'address' => $this->address,
+            'directorate' => $this->directorate,
+            'sub_directorate' => $this->sub_directorate,
             'id_type' => $this->id_type,
             'id_number' => $this->id_number,
             'notes' => $this->notes,

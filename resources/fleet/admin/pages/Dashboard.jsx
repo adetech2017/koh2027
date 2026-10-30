@@ -3,6 +3,7 @@ import { useApi } from '../../shared/hooks';
 import { Badge, Button, Card, EmptyState, LoadError, Loading, PageHeader, formatDate } from '../../shared/ui';
 import { useAuth } from '../auth';
 import { useCanManage } from '../options';
+import { WeeklyChart } from '../charts';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -33,6 +34,26 @@ export default function Dashboard() {
                     note={data.recalls.open ? `${data.recalls.open} open recall${data.recalls.open === 1 ? '' : 's'}` : null}
                 />
             </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat label="Waiting for review" value={data.evaluations.pending_review} to="/evaluations?review_status=pending" />
+                <Stat
+                    label="Videos in, this window"
+                    value={`${data.evaluations.this_window.sent} / ${data.evaluations.this_window.vehicles}`}
+                    to="/compliance"
+                />
+                <Stat label="Missed (last 30 days)" value={data.evaluations.missed_30_days} to="/compliance" />
+                <Stat
+                    label="WhatsApp failures (7 days)"
+                    value={data.evaluations.notifications_failed_7_days}
+                    to="/beneficiaries"
+                    note={data.evaluations.notifications_failed_7_days ? 'Check the template names and access token' : null}
+                />
+            </div>
+
+            <Card title="Evaluations due each week" className="mt-6">
+                <WeeklyChart weeks={data.evaluations.weekly} />
+            </Card>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
                 <Card title="Recent handovers and returns" className="lg:col-span-2 [&>div:last-child]:p-0">

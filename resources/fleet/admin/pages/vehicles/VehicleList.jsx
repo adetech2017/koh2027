@@ -21,10 +21,15 @@ export default function VehicleList() {
         <>
             <PageHeader
                 title="Vehicles"
-                actions={canManage && (
+                actions={(
                     <>
-                        <Link to="/import?type=vehicles"><Button variant="secondary">Import CSV</Button></Link>
-                        <Link to="/vehicles/new"><Button>Add vehicle</Button></Link>
+                        <a href="/api/v1/admin/exports/vehicles"><Button variant="secondary">Export CSV</Button></a>
+                        {canManage && (
+                            <>
+                                <Link to="/import?type=vehicles"><Button variant="secondary">Import CSV</Button></Link>
+                                <Link to="/vehicles/new"><Button>Add vehicle</Button></Link>
+                            </>
+                        )}
                     </>
                 )}
             />

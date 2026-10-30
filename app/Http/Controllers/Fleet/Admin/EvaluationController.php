@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Fleet\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Fleet\Evaluation;
 use App\Models\Fleet\Vehicle;
+use App\Services\Fleet\EvaluationReview;
 use App\Services\Fleet\FleetFiles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,7 +28,8 @@ class EvaluationController extends Controller
             ->when($search !== '', fn ($query) => $query->where(fn ($q) => $q
                 ->whereHas('vehicle', fn ($v) => $v->where('plate_number', 'like', '%'.Vehicle::normalizePlate($search).'%'))
                 ->orWhereHas('beneficiary', fn ($b) => $b->where('full_name', 'like', "%{$search}%"))))
-            ->latest('submitted_at')
+            // The review queue works oldest first; everything else newest first
+            ->when($request->query('review_status') === 'pending', fn ($q) => $q->oldest('submitted_at'), fn ($q) => $q->latest('submitted_at'))
             ->paginate(min((int) $request->query('per_page', 25), 100))
             ->through(fn (Evaluation $evaluation) => $evaluation->toAdminApi());
 
@@ -39,6 +41,24 @@ class EvaluationController extends Controller
         $evaluation->load('vehicle', 'beneficiary', 'period', 'reviewer');
 
         return response()->json(['evaluation' => $evaluation->toAdminApi()]);
+    }
+
+    public function review(Request $request, Evaluation $evaluation, EvaluationReview $review): JsonResponse
+    {
+        $data = $request->validate([
+            'decision' => ['required', 'in:approve,reject'],
+            'notes' => ['nullable', 'string', 'max:300', 'required_if:decision,reject'],
+        ], [
+            'notes.required_if' => 'Say why it was rejected. The beneficiary sees this on WhatsApp and in the app.',
+        ]);
+
+        $evaluation = $review->decide($evaluation, $data['decision'], $data['notes'] ?? null, auth('fleet_admin')->user());
+
+        return response()->json([
+            'evaluation' => $evaluation->load('vehicle', 'beneficiary', 'period', 'reviewer')->toAdminApi(),
+            // So the reviewer can go straight to the next one
+            'next_id' => Evaluation::where('review_status', 'pending')->where('processing_status', 'ready')->oldest('submitted_at')->value('id'),
+        ]);
     }
 
     public function video(Evaluation $evaluation, FleetFiles $files): Response

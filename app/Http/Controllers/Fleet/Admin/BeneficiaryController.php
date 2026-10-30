@@ -7,6 +7,7 @@ use App\Models\Fleet\Assignment;
 use App\Models\Fleet\AuditLog;
 use App\Models\Fleet\Beneficiary;
 use App\Support\Fleet\PhoneNumber;
+use App\Support\Fleet\SubDirectorateRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -52,6 +53,8 @@ class BeneficiaryController extends Controller
         return response()->json([
             'beneficiary' => $beneficiary->toAdminApi(),
             'assignments' => $assignments,
+            'notifications' => \App\Models\Fleet\Notification::with('messageTemplate', 'sender')
+                ->where('beneficiary_id', $beneficiary->id)->latest('id')->limit(20)->get()->map->toApi(),
         ]);
     }
 
@@ -75,6 +78,10 @@ class BeneficiaryController extends Controller
         ], static::messages());
 
         $beneficiary->fill(collect($data)->except('active')->all());
+        // A new directorate without a sub-directorate in the request drops the old one, which belonged elsewhere
+        if ($beneficiary->isDirty('directorate') && !array_key_exists('sub_directorate', $data)) {
+            $beneficiary->sub_directorate = null;
+        }
         if (array_key_exists('active', $data)) {
             $beneficiary->deactivated_at = $data['active'] ? null : ($beneficiary->deactivated_at ?? now());
         }
@@ -108,6 +115,8 @@ class BeneficiaryController extends Controller
             'address' => ['nullable', 'string', 'max:255'],
             'lga' => ['nullable', Rule::in(config('fleet.lgas'))],
             'ward' => ['nullable', 'string', 'max:100'],
+            'directorate' => ['nullable', Rule::in(array_keys(config('fleet.directorates')))],
+            'sub_directorate' => ['nullable', 'string', new SubDirectorateRule($ignore?->directorate)],
             'id_type' => ['nullable', Rule::in(array_keys(config('fleet.id_types')))],
             'id_number' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:2000'],
