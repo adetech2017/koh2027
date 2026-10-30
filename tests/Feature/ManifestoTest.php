@@ -42,6 +42,17 @@ class ManifestoTest extends TestCase
         $this->get('/manifesto')->assertOk();
     }
 
+    public function test_the_homepage_offers_the_manifesto_only_while_a_manifesto_document_is_switched_on(): void
+    {
+        $this->get('/')->assertInertia(fn ($page) => $page->where('manifestoAvailable', false));
+
+        $full = $this->document('Full Campaign Manifesto 2027');
+        $this->get('/')->assertInertia(fn ($page) => $page->where('manifestoAvailable', true));
+
+        $full->update(['is_active' => false]);
+        $this->get('/')->assertInertia(fn ($page) => $page->where('manifestoAvailable', false));
+    }
+
     public function test_old_materials_links_redirect_and_keep_their_tracking_tags(): void
     {
         $location = $this->get('/materials?utm_source=whatsapp&utm_campaign=launch')

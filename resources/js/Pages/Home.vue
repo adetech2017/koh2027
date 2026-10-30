@@ -22,14 +22,14 @@
             </span>
           </Link>
           <Link
-            href="/manifesto"
+            :href="manifestoAvailable ? '/manifesto' : '/platforms'"
             class="group flex items-center gap-4 bg-white rounded-lg shadow-card hover:shadow-card-hover p-5 border-t-4 border-success transition-all"
           >
             <span class="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center flex-shrink-0" aria-hidden="true">
               <DocumentTextIcon class="w-6 h-6" />
             </span>
             <span>
-              <span class="block font-bold text-dark group-hover:text-primary">Read the manifesto</span>
+              <span class="block font-bold text-dark group-hover:text-primary">{{ manifestoAvailable ? 'Read the manifesto' : 'Explore the pillars' }}</span>
               <span class="block text-sm text-body">The Lagos Promise, pillar by pillar.</span>
             </span>
           </Link>
@@ -223,14 +223,24 @@
         <div class="bg-white rounded-xl shadow-card p-8 md:p-12 grid grid-cols-1 md:grid-cols-5 gap-8 items-center">
           <div class="md:col-span-3">
             <p class="text-sm font-semibold uppercase tracking-wider text-gold-dark mb-2">The Lagos Promise</p>
-            <h2 id="manifesto-heading" class="text-3xl md:text-4xl font-bold text-dark mb-4">Read the manifesto</h2>
-            <p class="text-body leading-relaxed">
-              The full manifesto and a short document for each of the {{ pillarCountWord }} pillars, free to download and share.
-              Got a question? Ask the Manifesto Assistant and get an answer from the documents themselves.
-            </p>
+            <template v-if="manifestoAvailable">
+              <h2 id="manifesto-heading" class="text-3xl md:text-4xl font-bold text-dark mb-4">Read the manifesto</h2>
+              <p class="text-body leading-relaxed">
+                The full manifesto and a short document for each of the {{ pillarCountWord }} pillars, free to download and share.
+                Got a question? Ask the Manifesto Assistant and get an answer from the documents themselves.
+              </p>
+            </template>
+            <!-- Every manifesto document is switched off in Admin → Materials -->
+            <template v-else>
+              <h2 id="manifesto-heading" class="text-3xl md:text-4xl font-bold text-dark mb-4">Ask about the manifesto</h2>
+              <p class="text-body leading-relaxed">
+                The Lagos Promise rests on {{ pillarCountWord }} pillars.
+                Ask the Manifesto Assistant any question and get an answer from the manifesto itself.
+              </p>
+            </template>
           </div>
           <div class="md:col-span-2 flex flex-col gap-3">
-            <Link href="/manifesto" class="btn-primary text-center">Download the manifesto</Link>
+            <Link v-if="manifestoAvailable" href="/manifesto" class="btn-primary text-center">Download the manifesto</Link>
             <button type="button" class="btn-secondary" @click="openAssistant">Ask the Manifesto Assistant</button>
           </div>
         </div>
@@ -285,6 +295,7 @@ const props = defineProps({
   heroSlides: { type: Array, default: () => [] },
   pillars: { type: Array, default: () => [] },
   pillarCount: { type: Number, default: 0 },
+  manifestoAvailable: { type: Boolean, default: false },
   stats: { type: Array, default: () => [] },
   events: { type: Array, default: () => [] },
   pastEventCount: { type: Number, default: 0 },

@@ -6,6 +6,7 @@ use App\Models\CampaignStat;
 use App\Models\Event;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
+use App\Models\Material;
 use App\Models\NewsArticle;
 use App\Models\PlatformPillar;
 use App\Models\Testimonial;
@@ -30,6 +31,8 @@ class HomeController extends Controller
             'heroSlides' => $heroSlides->map(fn ($slide) => [...$slide->toArray(), 'image_url' => $slide->image_url]),
             'pillars' => $pillars,
             'pillarCount' => PlatformPillar::active()->count(),
+            // Admin → Materials switches decide whether the homepage offers the manifesto for download
+            'manifestoAvailable' => Material::active()->where('category', 'manifesto')->exists(),
             'stats' => $stats,
             'events' => $events->map(fn ($event) => [...$event->toArray(), 'image_url' => $event->image_url]),
             'pastEventCount' => Event::active()->where('starts_at', '<', now())->count(),
