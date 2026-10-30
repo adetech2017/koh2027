@@ -74,10 +74,10 @@ class PlatformPillarSeeder extends Seeder
                 'sort_order' => 6,
             ],
             [
-                'title' => 'Economic Dignity',
-                'slug' => 'economic-dignity',
+                'title' => 'Everyday Dignity',
+                'slug' => 'everyday-dignity',
                 'summary' => 'Affordable housing, mobility and a lower cost of living for every household',
-                'body' => 'The dignity of a household begins with the dignity of a roof. Economic Dignity delivers affordable shelter through Home for Lagos, with a mortgage benchmark of 10 per cent down and single-digit interest, integrates the megacity\'s transport network through Lagos in Motion, and tackles the day-to-day cost of living for Lagos families.',
+                'body' => 'The dignity of a household begins with the dignity of a roof. Everyday Dignity delivers affordable shelter through Home for Lagos, with a mortgage benchmark of 10 per cent down and single-digit interest, integrates the megacity\'s transport network through Lagos in Motion, and tackles the day-to-day cost of living for Lagos families.',
                 'icon' => 'home',
                 'color' => '#0D9488',
                 'sort_order' => 7,
