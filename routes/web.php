@@ -34,10 +34,12 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 Route::post('/manifesto-chat', [ManifestoChatController::class, 'respond'])->name('manifesto-chat')->middleware('throttle:manifesto-chat');
 
 Route::get('/manifesto', [MaterialController::class, 'index'])->name('materials.index');
-Route::get('/manifesto/{id}/download', [MaterialController::class, 'download'])->name('materials.download');
+// Throttled so nobody can script the 48 MB manifesto over and over (and inflate the download counts)
+Route::get('/manifesto/{id}/download', [MaterialController::class, 'download'])->name('materials.download')
+    ->whereNumber('id')->middleware('throttle:30,1');
 // The page used to live at /materials; keep shared links working, including their utm_ tags
 Route::get('/materials', fn (Request $request) => redirect()->to('/manifesto'.($request->getQueryString() ? '?'.$request->getQueryString() : ''), 301));
-Route::get('/materials/{id}/download', fn (int $id) => redirect("/manifesto/{$id}/download", 301));
+Route::get('/materials/{id}/download', fn (int $id) => redirect("/manifesto/{$id}/download", 301))->whereNumber('id');
 
 Route::get('/merchandise', [MerchandiseController::class, 'index'])->name('merchandise.index');
 Route::get('/merchandise/{slug}', [MerchandiseController::class, 'show'])->name('merchandise.show');

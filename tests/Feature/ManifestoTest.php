@@ -75,6 +75,33 @@ class ManifestoTest extends TestCase
         $this->assertSame(1, $material->fresh()->download_count);
     }
 
+    public function test_download_links_with_a_non_numeric_id_are_not_found_rather_than_an_error(): void
+    {
+        $this->get('/manifesto/abc/download')->assertNotFound();
+        $this->get('/materials/abc/download')->assertNotFound();
+    }
+
+    public function test_hidden_documents_cannot_be_downloaded(): void
+    {
+        $material = $this->document('Full Campaign Manifesto 2027');
+        $material->update(['is_active' => false]);
+
+        $this->get("/manifesto/{$material->id}/download")->assertNotFound();
+        $this->assertSame(0, $material->fresh()->download_count);
+    }
+
+    public function test_repeated_downloads_from_one_visitor_are_throttled(): void
+    {
+        $material = $this->document('Full Campaign Manifesto 2027');
+
+        for ($i = 0; $i < 30; $i++) {
+            $this->get("/manifesto/{$material->id}/download")->assertOk();
+        }
+
+        $this->get("/manifesto/{$material->id}/download")->assertTooManyRequests();
+        $this->assertSame(30, $material->fresh()->download_count);
+    }
+
     public function test_the_assistant_reads_the_full_manifesto_and_not_the_pillar_documents(): void
     {
         $full = $this->document('Full Campaign Manifesto 2027');
