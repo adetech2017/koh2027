@@ -13,6 +13,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\VolunteerController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -32,8 +33,11 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
 Route::post('/manifesto-chat', [ManifestoChatController::class, 'respond'])->name('manifesto-chat')->middleware('throttle:manifesto-chat');
 
-Route::get('/materials', [MaterialController::class, 'index'])->name('materials.index');
-Route::get('/materials/{id}/download', [MaterialController::class, 'download'])->name('materials.download');
+Route::get('/manifesto', [MaterialController::class, 'index'])->name('materials.index');
+Route::get('/manifesto/{id}/download', [MaterialController::class, 'download'])->name('materials.download');
+// The page used to live at /materials; keep shared links working, including their utm_ tags
+Route::get('/materials', fn (Request $request) => redirect()->to('/manifesto'.($request->getQueryString() ? '?'.$request->getQueryString() : ''), 301));
+Route::get('/materials/{id}/download', fn (int $id) => redirect("/manifesto/{$id}/download", 301));
 
 Route::get('/merchandise', [MerchandiseController::class, 'index'])->name('merchandise.index');
 Route::get('/merchandise/{slug}', [MerchandiseController::class, 'show'])->name('merchandise.show');

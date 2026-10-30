@@ -40,4 +40,9 @@ return [
         'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5'),
     ],
 
+    // Poppler's pdftotext, used to read the manifesto PDF for the assistant (apt install poppler-utils)
+    'pdftotext' => [
+        'path' => env('PDFTOTEXT_PATH', 'pdftotext'),
+    ],
+
 ];

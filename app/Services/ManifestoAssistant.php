@@ -61,9 +61,11 @@ class ManifestoAssistant
         that are not stated in the material.
 
         Rules:
+        - The full text of the manifesto is the authoritative source. If the short
+          pillar summaries disagree with it, go with the manifesto.
         - If the manifesto material does not cover what's being asked, say so plainly
-          and suggest the visitor check the Materials/Manifesto page for the full
-          documents or use the Contact page — do not guess.
+          and suggest the visitor check the Manifesto page for the full document or
+          use the Contact page — do not guess.
         - Keep answers conversational and concise (a few short paragraphs at most).
         - When relevant, mention which pillar (e.g. "People First", "Renewal") the
           answer comes from.
@@ -79,11 +81,13 @@ class ManifestoAssistant
             $sections[] = "## Pillar: {$pillar->title}\n{$pillar->summary}\n\n{$pillar->body}";
         }
 
+        // Older pillar PDFs may still hold extracted text from before; only eligible documents count
         $documents = Material::query()
             ->where('category', 'manifesto')
             ->whereNotNull('extracted_text')
             ->orderBy('title')
-            ->get(['title', 'extracted_text']);
+            ->get(['title', 'category', 'file_type', 'extracted_text'])
+            ->filter(fn ($document) => ManifestoTextExtractor::eligible($document));
 
         foreach ($documents as $document) {
             $sections[] = "## Full text: {$document->title}\n{$document->extracted_text}";

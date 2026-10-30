@@ -350,7 +350,7 @@ const deviceSegments = computed(() => props.devices.map(d => ({
 const deviceTotal = computed(() => props.devices.reduce((sum, d) => sum + d.visitors, 0))
 
 // --- Link builder ---
-const linkPages = { '/': 'Home', '/materials': 'Manifesto', '/events': 'Events', '/news': 'News', '/platforms': 'Platforms', '/about': 'About', '/contact': 'Contact' }
+const linkPages = { '/': 'Home', '/manifesto': 'Manifesto', '/events': 'Events', '/news': 'News', '/platforms': 'Platforms', '/about': 'About', '/contact': 'Contact' }
 const linkSources = ['whatsapp', 'facebook', 'x', 'instagram', 'tiktok', 'sms', 'email', 'flyer']
 const link = reactive({ page: '/', source: 'whatsapp', campaign: '' })
 const copied = ref(false)

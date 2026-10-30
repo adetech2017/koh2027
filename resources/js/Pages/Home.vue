@@ -22,7 +22,7 @@
             </span>
           </Link>
           <Link
-            href="/materials"
+            href="/manifesto"
             class="group flex items-center gap-4 bg-white rounded-lg shadow-card hover:shadow-card-hover p-5 border-t-4 border-success transition-all"
           >
             <span class="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center flex-shrink-0" aria-hidden="true">
@@ -230,7 +230,7 @@
             </p>
           </div>
           <div class="md:col-span-2 flex flex-col gap-3">
-            <Link href="/materials" class="btn-primary text-center">Download the manifesto</Link>
+            <Link href="/manifesto" class="btn-primary text-center">Download the manifesto</Link>
             <button type="button" class="btn-secondary" @click="openAssistant">Ask the Manifesto Assistant</button>
           </div>
         </div>

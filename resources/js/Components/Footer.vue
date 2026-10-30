@@ -17,7 +17,7 @@
             <li><Link href="/" class="hover:text-gold transition-colors">Home</Link></li>
             <li><Link href="/about" class="hover:text-gold transition-colors">About</Link></li>
             <li><Link href="/platforms" class="hover:text-gold transition-colors">Platforms</Link></li>
-            <li><Link href="/materials" class="hover:text-gold transition-colors">Manifesto</Link></li>
+            <li><Link href="/manifesto" class="hover:text-gold transition-colors">Manifesto</Link></li>
             <li><Link href="/events" class="hover:text-gold transition-colors">Events</Link></li>
             <li><Link href="/news" class="hover:text-gold transition-colors">News</Link></li>
             <li><a href="https://pbat-koh2027.com" target="_blank" rel="noopener" class="hover:text-gold transition-colors">PBAT-KOH website</a></li>

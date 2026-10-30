@@ -14,7 +14,7 @@
         <section v-if="manifesto" class="space-y-10">
           <!-- Hero: the complete manifesto -->
           <a
-            :href="`/materials/${manifesto.id}/download`"
+            :href="`/manifesto/${manifesto.id}/download`"
             class="group relative overflow-hidden rounded-lg shadow-card-prominent bg-gradient-to-br from-primary to-primary-dark text-white flex flex-col md:flex-row items-stretch"
           >
             <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 85% 20%, white 0, transparent 45%);"></div>
@@ -54,7 +54,7 @@
               <a
                 v-for="item in pillarMaterials"
                 :key="item.material.id"
-                :href="`/materials/${item.material.id}/download`"
+                :href="`/manifesto/${item.material.id}/download`"
                 class="group relative bg-white border border-light-gray rounded-lg overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
               >
                 <div class="h-1.5" :style="{ backgroundColor: item.pillar.color }"></div>
@@ -98,7 +98,7 @@
             <button v-for="cat in otherCategories" :key="cat" type="button" :aria-pressed="activeCategory === cat" @click="activeCategory = cat" :class="['px-4 py-2 rounded-full text-sm transition-colors capitalize font-medium', activeCategory === cat ? 'bg-primary text-white' : 'text-body border border-gray-300 hover:border-primary hover:text-primary']">{{ cat === 'faq' ? 'FAQ' : cat }}</button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <a v-for="material in materialsByCategory" :key="material.id" :href="`/materials/${material.id}/download`" class="bg-white border border-light-gray rounded-lg p-6 hover:shadow-card transition-all group">
+            <a v-for="material in materialsByCategory" :key="material.id" :href="`/manifesto/${material.id}/download`" class="bg-white border border-light-gray rounded-lg p-6 hover:shadow-card transition-all group">
               <div class="flex items-start space-x-4">
                 <div class="w-12 h-12 bg-light-blue rounded-lg flex items-center justify-center flex-shrink-0">
                   <DocumentTextIcon class="w-6 h-6 text-primary" />

@@ -162,7 +162,7 @@ const ctaStyles = [
 
 // Existing public pages; volunteering happens on the external campaign site, as in the main navigation
 const pageSuggestions = [
-  '/about', '/platforms', '/events', '/news', '/gallery', '/materials', '/merchandise', '/contact',
+  '/about', '/platforms', '/events', '/news', '/gallery', '/manifesto', '/merchandise', '/contact',
   'https://hamzatforlagos.com/volunteer',
 ]
 

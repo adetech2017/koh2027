@@ -49,7 +49,7 @@ class MaterialController extends Controller
                 'visitor_id' => \App\Support\Visitor::id($request),
                 'name' => 'download',
                 'label' => substr($material->title, 0, 255),
-                'path' => '/materials',
+                'path' => '/manifesto',
                 'created_at' => now(),
             ]);
         }

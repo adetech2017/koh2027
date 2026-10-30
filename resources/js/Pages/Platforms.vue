@@ -48,7 +48,7 @@
             <p class="text-body leading-relaxed whitespace-pre-line">{{ pillar.body }}</p>
             <a
               v-if="pillar.document"
-              :href="`/materials/${pillar.document.id}/download`"
+              :href="`/manifesto/${pillar.document.id}/download`"
               class="inline-flex items-center gap-2 mt-6 font-semibold hover:underline"
               :style="{ color: pillar.color || '#003D82' }"
             >

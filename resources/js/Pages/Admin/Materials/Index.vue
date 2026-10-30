@@ -94,7 +94,7 @@
                   @click="extract(doc)"
                 >{{ extractingId === doc.id ? 'Extracting…' : 'Extract text' }}</button>
               </template>
-              <span v-else-if="doc.assistant === 'skipped'" class="text-gray-400" title="The full manifesto repeats the pillar documents, so the assistant reads those instead">Not read by assistant (covered by the pillar documents)</span>
+              <span v-else-if="doc.assistant === 'skipped'" class="text-gray-400" title="The full manifesto is the authoritative version, so the assistant reads that instead">Not read by assistant (uses the full manifesto)</span>
             </div>
 
             <!-- Actions -->

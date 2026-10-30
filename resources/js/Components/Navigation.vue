@@ -36,7 +36,7 @@
             </div>
           </div>
 
-          <Link href="/materials" :class="isActive('materials') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Manifesto</Link>
+          <Link href="/manifesto" :class="isActive('manifesto') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Manifesto</Link>
           <Link href="/events" :class="isActive('events') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Events</Link>
           <Link href="/news" :class="isActive('news') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">News</Link>
           <Link href="/gallery" :class="isActive('gallery') ? 'text-primary font-semibold' : 'text-body hover:text-primary transition-colors'">Gallery</Link>
@@ -86,7 +86,7 @@
           <Link href="/merchandise" class="block px-4 py-2 text-sm text-body hover:bg-light-blue rounded transition-colors">Merchandise Designs</Link>
         </div>
 
-        <Link href="/materials" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Manifesto</Link>
+        <Link href="/manifesto" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Manifesto</Link>
         <Link href="/events" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Events</Link>
         <Link href="/news" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">News</Link>
         <Link href="/gallery" class="block px-4 py-2 text-body hover:bg-light-blue rounded transition-colors">Gallery</Link>

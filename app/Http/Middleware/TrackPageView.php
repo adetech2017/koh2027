@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class TrackPageView
 {
-    private const EXCLUDED = ['admin', 'admin/*', 'login', 't/*', 'up', 'api/*', 'storage/*', 'build/*', 'newsletter/confirm/*', 'newsletter/unsubscribe/*', 'materials/*/download'];
+    private const EXCLUDED = ['admin', 'admin/*', 'login', 't/*', 'up', 'api/*', 'storage/*', 'build/*', 'newsletter/confirm/*', 'newsletter/unsubscribe/*', 'manifesto/*/download'];
 
     public function handle(Request $request, Closure $next): Response
     {

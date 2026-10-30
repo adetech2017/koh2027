@@ -23,7 +23,8 @@ class TrafficAnalyticsService
         '/gallery' => 'Gallery',
         '/events' => 'Events',
         '/news' => 'News',
-        '/materials' => 'Manifesto',
+        '/manifesto' => 'Manifesto',
+        '/materials' => 'Manifesto (old address)',
         '/merchandise' => 'Merchandise',
     ];
 
