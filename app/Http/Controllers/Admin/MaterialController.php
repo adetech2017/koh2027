@@ -8,7 +8,9 @@ use App\Services\ManifestoTextExtractor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -53,7 +55,7 @@ class MaterialController extends Controller
         $validated = $this->validated($request, fileRequired: true);
         $validated = array_merge($validated, $this->storeFile($request));
         if ($request->hasFile('thumbnail')) {
-            $validated['thumbnail_path'] = $request->file('thumbnail')->store('materials/thumbnails', 'public');
+            $validated['thumbnail_path'] = $this->storeThumbnail($request, cleanUp: [$validated['file_path']]);
         }
 
         $material = Material::create($validated);
@@ -79,18 +81,22 @@ class MaterialController extends Controller
         $replacingFile = $request->hasFile('file');
         $wasEligible = ManifestoTextExtractor::eligible($material);
 
+        // Save the new files before touching the old ones, so a failed upload leaves the document as it was
         if ($replacingFile) {
-            Storage::disk('local')->delete($material->file_path);
             $validated = array_merge($validated, $this->storeFile($request));
         }
 
         if ($request->hasFile('thumbnail') || $request->boolean('remove_thumbnail')) {
-            if ($material->thumbnail_path) {
-                Storage::disk('public')->delete($material->thumbnail_path);
-            }
             $validated['thumbnail_path'] = $request->hasFile('thumbnail')
-                ? $request->file('thumbnail')->store('materials/thumbnails', 'public')
+                ? $this->storeThumbnail($request, cleanUp: $replacingFile ? [$validated['file_path']] : [])
                 : null;
+        }
+
+        if ($replacingFile) {
+            Storage::disk('local')->delete($material->file_path);
+        }
+        if (array_key_exists('thumbnail_path', $validated) && $material->thumbnail_path) {
+            Storage::disk('public')->delete($material->thumbnail_path);
         }
 
         $material->update($validated);
@@ -175,13 +181,42 @@ class MaterialController extends Controller
     private function storeFile(Request $request): array
     {
         $file = $request->file('file');
+        $path = $file->store('materials', 'local');
+
+        // The local disk doesn't throw, so a write failure (usually folder permissions) comes back as false
+        if ($path === false) {
+            Log::error('Material upload could not be saved: is storage/app/private/materials writable by the web server?');
+
+            throw ValidationException::withMessages([
+                'file' => 'The server could not save this file. Ask your administrator to check the storage folder permissions.',
+            ]);
+        }
 
         return [
-            'file_path' => $file->store('materials', 'local'),
+            'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
             'file_type' => strtolower($file->getClientOriginalExtension()),
             'file_size' => $file->getSize(),
         ];
+    }
+
+    /**
+     * @param  array<int, string>  $cleanUp  files already saved in this request, removed if the thumbnail fails
+     */
+    private function storeThumbnail(Request $request, array $cleanUp = []): string
+    {
+        $path = $request->file('thumbnail')->store('materials/thumbnails', 'public');
+
+        if ($path === false) {
+            Storage::disk('local')->delete($cleanUp);
+            Log::error('Material thumbnail could not be saved: is storage/app/public/materials/thumbnails writable by the web server?');
+
+            throw ValidationException::withMessages([
+                'thumbnail' => 'The server could not save this image. Ask your administrator to check the storage folder permissions.',
+            ]);
+        }
+
+        return $path;
     }
 
     private function extractAfterResponse(Material $material): void
