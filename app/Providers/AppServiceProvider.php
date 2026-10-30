@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Mail\MicrosoftGraphTransport;
 use App\Models\Event;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
@@ -12,6 +13,7 @@ use App\Observers\ContentObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -54,6 +56,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('manifesto-chat', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());
         });
+
+        Mail::extend('microsoft-graph', fn (array $config) => new MicrosoftGraphTransport(
+            (string) $config['tenant_id'], (string) $config['client_id'], (string) $config['client_secret'],
+        ));
 
         Gate::define('manage-content', fn ($user) => $user->canManageContent());
         Gate::define('delete-content', fn ($user) => $user->canDelete());
