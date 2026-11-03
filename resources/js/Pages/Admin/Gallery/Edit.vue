@@ -11,7 +11,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            {{ image.category?.name || 'Uncategorized' }}
+            {{ image.category?.name || 'No album' }}
           </Link>
           <h1 class="text-2xl font-bold text-dark mt-2">Photo details</h1>
         </div>
@@ -63,11 +63,11 @@
                 :class="inputClass('alt_text')"
               />
               <p v-if="form.errors.alt_text" class="text-red-600 text-sm mt-1">{{ form.errors.alt_text }}</p>
-              <p v-else class="text-xs text-gray-500 mt-1">What the photo shows. Read aloud by screen readers and used by search engines.</p>
+              <p v-else class="text-xs text-gray-500 mt-1">What the photo shows. Shown on the website when there is no caption, and read aloud by screen readers.</p>
             </div>
             <div>
               <label for="g-title" class="block text-sm font-medium text-dark mb-1">Caption</label>
-              <input id="g-title" v-model="form.title" type="text" maxlength="200" placeholder="Optional caption shown with the photo" :class="inputClass('title')" />
+              <input id="g-title" v-model="form.title" type="text" maxlength="200" placeholder="Optional headline shown above the description" :class="inputClass('title')" />
               <p v-if="form.errors.title" class="text-red-600 text-sm mt-1">{{ form.errors.title }}</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -83,9 +83,9 @@
               </div>
             </div>
             <div>
-              <label for="g-category" class="block text-sm font-medium text-dark mb-1">Category</label>
+              <label for="g-category" class="block text-sm font-medium text-dark mb-1">Album</label>
               <select id="g-category" v-model="form.category_id" :class="inputClass('category_id')">
-                <option :value="null" disabled>Choose a category</option>
+                <option :value="null" disabled>Choose an album</option>
                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
               </select>
               <p v-if="form.errors.category_id" class="text-red-600 text-sm mt-1">{{ form.errors.category_id }}</p>
@@ -104,7 +104,7 @@
               <input v-model="form.is_featured" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
               <span>
                 <span class="block text-sm font-medium text-dark">Feature on homepage</span>
-                <span class="block text-xs text-gray-500">The homepage shows up to 8 featured photos.</span>
+                <span class="block text-xs text-gray-500">The homepage shows up to 8 photos, newest first. Featured photos take priority; free slots show the latest uploads.</span>
               </span>
             </label>
           </section>

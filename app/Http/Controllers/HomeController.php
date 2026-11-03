@@ -25,7 +25,15 @@ class HomeController extends Controller
         $events = Event::upcoming()->take(4)->get(['id', 'title', 'slug', 'lga', 'event_type', 'starts_at', 'image_path', 'image_alt']);
         $articles = NewsArticle::published()->take(3)->get(['id', 'title', 'slug', 'category', 'excerpt', 'image_path', 'image_alt', 'published_at']);
         $testimonials = Testimonial::active()->take(6)->get();
-        $galleryImages = GalleryImage::active()->where('is_featured', true)->take(8)->get();
+        // Featured photos, newest first; any free slots go to the latest uploads
+        $slots = \App\Http\Controllers\Admin\GalleryController::HOMEPAGE_SLOTS;
+        $galleryImages = GalleryImage::active()->where('is_featured', true)->newestFirst()->take($slots)->get();
+        if ($galleryImages->count() < $slots) {
+            $galleryImages = $galleryImages->concat(
+                GalleryImage::active()->where('is_featured', false)->newestFirst()->take($slots - $galleryImages->count())->get()
+            )->sortBy([['created_at', 'desc'], ['id', 'desc']])->values();
+        }
+        $galleryImages->load('category');
 
         return Inertia::render('Home', [
             'heroSlides' => $heroSlides->map(fn ($slide) => [...$slide->toArray(), 'image_url' => $slide->image_url]),
@@ -42,10 +50,7 @@ class HomeController extends Controller
                 ...$t->toArray(),
                 'avatar_url' => $t->avatar_path && Storage::disk('public')->exists($t->avatar_path) ? $t->avatar_url : null,
             ]),
-            'galleryImages' => $galleryImages->map(fn ($img) => [
-                ...$img->only(['id', 'title', 'alt_text', 'event_label']),
-                'image_url' => $img->image_url,
-            ]),
+            'galleryImages' => $galleryImages->map(fn ($img) => $img->toPublicArray()),
         ])->withViewData(['meta' => [
             'title' => 'Kadri Obafemi Hamzat for Lagos 2027',
             'image' => $heroSlides->first()?->image_url,

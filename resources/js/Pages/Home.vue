@@ -315,7 +315,8 @@ const galleryRow = computed(() => props.galleryImages.slice(0, GALLERY_ROW))
 const isMoreTile = (i) => i === GALLERY_ROW - 1 && props.galleryImages.length > GALLERY_ROW
 // Older uploads stored the filename as the title; never show that as a caption
 const isFilename = (text) => /\.(jpe?g|png|gif|webp)$/i.test(text || '')
-const caption = (image) => [isFilename(image.title) ? null : image.title, image.event_label].filter(Boolean).join(' · ')
+// Caption, or the photo's description when no caption was written
+const caption = (image) => (isFilename(image.title) ? null : image.title) || (isFilename(image.alt_text) ? null : image.alt_text) || image.event_label || ''
 const lightbox = ref(null)
 
 const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']

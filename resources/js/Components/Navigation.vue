@@ -3,11 +3,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16 md:h-20">
         <!-- Logo -->
-        <Link href="/" class="flex items-center space-x-2 flex-shrink-0">
-          <div class="w-10 h-10 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">
-            KOH
-          </div>
-          <span class="hidden sm:inline font-semibold text-dark text-sm">2027</span>
+        <Link href="/" class="flex items-center space-x-2 flex-shrink-0" aria-label="KOH 2027 home">
+          <img
+            v-if="page.props.logoUrl"
+            :src="page.props.logoUrl"
+            alt="Kadri Obafemi Hamzat 2027"
+            class="h-10 md:h-14 w-auto max-w-[11rem] object-contain"
+          />
+          <template v-else>
+            <div class="w-10 h-10 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">
+              KOH
+            </div>
+            <span class="hidden sm:inline font-semibold text-dark text-sm">2027</span>
+          </template>
         </Link>
 
         <!-- Desktop Menu -->

@@ -82,7 +82,7 @@
           {{ uploading ? 'Uploading…' : `Upload ${validItems.length} photo${validItems.length !== 1 ? 's' : ''}` }}
         </button>
       </div>
-      <p v-if="!categoryId && validItems.length" class="text-sm text-amber-700 text-right">Choose a category first.</p>
+      <p v-if="!categoryId && validItems.length" class="text-sm text-amber-700 text-right">Choose an album first.</p>
     </div>
   </div>
 </template>

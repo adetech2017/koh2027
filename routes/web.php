@@ -23,6 +23,7 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/volunteer', [PageController::class, 'volunteer'])->name('volunteer');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
+Route::get('/gallery/{album:slug}', [GalleryController::class, 'album'])->name('gallery.album');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{slug}', [EventController::class, 'show'])->name('events.show');
@@ -117,6 +118,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('merchandise/images/{image}', [Admin\MerchandiseImageController::class, 'destroy'])->name('merchandise.images.destroy');
         Route::post('merchandise/images/{image}/set-primary', [Admin\MerchandiseImageController::class, 'setPrimary'])->name('merchandise.images.set-primary');
         Route::resource('testimonials', Admin\TestimonialController::class);
+        Route::post('gallery/bulk-move', [Admin\GalleryController::class, 'bulkMove'])->name('gallery.bulk-move');
         Route::resource('gallery', Admin\GalleryController::class)->except(['show']);
         Route::patch('gallery/{gallery}/toggle-featured', [Admin\GalleryController::class, 'toggleFeatured'])->name('gallery.toggle-featured');
         Route::patch('gallery/{gallery}/toggle-active', [Admin\GalleryController::class, 'toggleActive'])->name('gallery.toggle-active');

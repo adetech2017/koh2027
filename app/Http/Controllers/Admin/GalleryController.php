@@ -19,18 +19,28 @@ class GalleryController extends Controller
 
     public function index(Request $request): Response
     {
+        // Albums, newest event (or latest upload) first; the cover is each album's newest photo
         $categories = ImageCategory::withCount('galleryImages')
             ->withCount(['galleryImages as featured_count' => fn ($query) => $query->where('is_featured', true)])
-            ->with(['galleryImages' => fn ($query) => $query->orderBy('sort_order')->orderBy('id')->limit(1)])
-            ->orderBy('name')
-            ->get()
-            ->map(fn ($category) => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'gallery_images_count' => $category->gallery_images_count,
-                'featured_count' => $category->featured_count,
-                'cover_url' => $category->galleryImages->first()?->image_url,
-            ]);
+            ->withMax('galleryImages', 'created_at')
+            ->orderByRaw('COALESCE(event_date, DATE(gallery_images_max_created_at), DATE(created_at)) DESC')
+            ->orderByDesc('id')
+            ->get();
+        $covers = GalleryImage::whereIn('category_id', $categories->pluck('id'))
+            ->newestFirst()
+            ->get(['id', 'category_id', 'image_path'])
+            ->unique('category_id')
+            ->keyBy('category_id');
+        $categories = $categories->map(fn ($category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'event_date' => $category->event_date?->toDateString(),
+            'description' => $category->description,
+            'gallery_images_count' => $category->gallery_images_count,
+            'featured_count' => $category->featured_count,
+            'cover_url' => $covers->get($category->id)?->image_url,
+        ]);
 
         // ?category=<id> or ?category=uncategorized opens that category's images
         $selected = $request->query('category');
@@ -38,8 +48,7 @@ class GalleryController extends Controller
         if ($selected === 'uncategorized' || ($selected && $categories->contains('id', (int) $selected))) {
             $images = GalleryImage::query()
                 ->when($selected === 'uncategorized', fn ($q) => $q->whereNull('category_id'), fn ($q) => $q->where('category_id', (int) $selected))
-                ->orderBy('sort_order')
-                ->orderBy('id')
+                ->newestFirst()
                 ->paginate(60)
                 ->withQueryString()
                 ->through(fn ($image) => $this->present($image));
@@ -78,6 +87,7 @@ class GalleryController extends Controller
             'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'category_id' => ['required', 'integer', 'exists:image_categories,id'],
         ], [
+            'category_id.required' => 'Choose an album first.',
             'images.*.max' => 'Each image must be 2 MB or smaller.',
             'images.*.mimes' => 'Images must be JPG, PNG, GIF or WebP.',
         ]);
@@ -112,8 +122,7 @@ class GalleryController extends Controller
     {
         $siblings = GalleryImage::query()
             ->when($gallery->category_id, fn ($q) => $q->where('category_id', $gallery->category_id), fn ($q) => $q->whereNull('category_id'))
-            ->orderBy('sort_order')
-            ->orderBy('id')
+            ->newestFirst()
             ->pluck('id');
         $position = $siblings->search($gallery->id);
 
@@ -156,6 +165,31 @@ class GalleryController extends Controller
             ? back()->with('success', 'Image details saved.')
             : redirect()->route('admin.gallery.index', ['category' => $gallery->category_id ?? 'uncategorized'])
                 ->with('success', 'Image details saved.');
+    }
+
+    // Move several photos into one album at once
+    public function bulkMove(Request $request): RedirectResponse
+    {
+        Gate::authorize('manage-content');
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:500'],
+            'ids.*' => ['integer', 'distinct', 'exists:gallery_images,id'],
+            'category_id' => ['required', 'integer', 'exists:image_categories,id'],
+        ], [
+            'ids.required' => 'Select at least one photo.',
+            'category_id.required' => 'Choose an album to move the photos to.',
+        ]);
+
+        $moved = GalleryImage::whereIn('id', $validated['ids'])
+            ->where(fn ($q) => $q->where('category_id', '!=', $validated['category_id'])->orWhereNull('category_id'))
+            ->update(['category_id' => $validated['category_id']]);
+
+        $album = ImageCategory::find($validated['category_id'])->name;
+
+        return back()->with('success', $moved
+            ? "Moved {$moved} photo".($moved !== 1 ? 's' : '')." to \"{$album}\"."
+            : "Those photos are already in \"{$album}\".");
     }
 
     public function toggleFeatured(GalleryImage $gallery): RedirectResponse
@@ -220,7 +254,10 @@ class GalleryController extends Controller
 
     private function categoryList()
     {
-        return ImageCategory::withCount('galleryImages')->orderBy('name')->get(['id', 'name']);
+        return ImageCategory::withCount('galleryImages')
+            ->orderByDesc('event_date')
+            ->orderByDesc('id')
+            ->get(['id', 'name', 'event_date']);
     }
 
     // The smallest of PHP's request and per-file limits, so the uploader can split large batches

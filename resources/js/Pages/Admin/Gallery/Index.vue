@@ -11,8 +11,8 @@
       >
         <p>
           <span class="font-semibold">★ {{ featuredCount }} of {{ homepageSlots }}</span> homepage slots used.
-          <template v-if="featuredCount > homepageSlots">Only the first {{ homepageSlots }} featured photos appear on the homepage.</template>
-          <template v-else-if="featuredCount === 0">Star photos to show them in the homepage gallery.</template>
+          <template v-if="featuredCount > homepageSlots">Only the {{ homepageSlots }} newest featured photos appear on the homepage.</template>
+          <template v-else-if="featuredCount < homepageSlots">Free slots show the latest uploads. Star photos to keep them on the homepage.</template>
         </p>
         <Link
           :href="uploadHref"
@@ -25,14 +25,14 @@
         </Link>
       </div>
 
-      <!-- Category tabs -->
+      <!-- Album tabs -->
       <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         <Link
           href="/admin/gallery"
           class="px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-colors"
           :class="!selectedCategory ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-100 shadow-sm'"
         >
-          All categories
+          All albums
         </Link>
         <Link
           v-for="cat in categories"
@@ -49,7 +49,7 @@
           class="px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-colors"
           :class="selectedCategory === 'uncategorized' ? 'bg-primary text-white' : 'bg-white text-amber-700 hover:bg-gray-100 shadow-sm'"
         >
-          Uncategorized <span class="ml-1 opacity-75">{{ uncategorizedCount }}</span>
+          No album <span class="ml-1 opacity-75">{{ uncategorizedCount }}</span>
         </Link>
       </div>
 
@@ -68,6 +68,7 @@
             </div>
             <div class="p-3">
               <h3 class="font-semibold text-sm text-dark truncate">{{ cat.name }}</h3>
+              <p v-if="cat.event_date" class="text-xs text-gray-500">{{ formatDate(cat.event_date) }}</p>
               <p class="text-xs text-gray-500">
                 {{ cat.gallery_images_count }} photo{{ cat.gallery_images_count !== 1 ? 's' : '' }}
                 <template v-if="cat.featured_count"> · ★ {{ cat.featured_count }}</template>
@@ -80,15 +81,15 @@
             href="/admin/gallery?category=uncategorized"
             class="bg-amber-50 border border-amber-200 rounded-lg overflow-hidden flex flex-col items-center justify-center p-4 text-center aspect-[4/3] sm:aspect-auto"
           >
-            <p class="font-semibold text-sm text-amber-800">Uncategorized</p>
-            <p class="text-xs text-amber-700">{{ uncategorizedCount }} photo{{ uncategorizedCount !== 1 ? 's' : '' }} need a category</p>
+            <p class="font-semibold text-sm text-amber-800">No album</p>
+            <p class="text-xs text-amber-700">{{ uncategorizedCount }} photo{{ uncategorizedCount !== 1 ? 's' : '' }} need an album</p>
           </Link>
 
-          <!-- New category -->
+          <!-- New album -->
           <div v-if="canManage" class="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center min-h-[10rem]">
             <template v-if="!creatingCategory">
               <button type="button" class="text-sm text-primary hover:text-primary-dark font-medium" @click="creatingCategory = true">
-                + New category
+                + New album
               </button>
             </template>
             <form v-else class="w-full space-y-2" @submit.prevent="createCategory">
@@ -96,58 +97,101 @@
                 v-model="newCategoryName"
                 type="text"
                 maxlength="100"
-                placeholder="Category name"
+                placeholder="e.g. Manifesto Unveiling"
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 autofocus
               />
+              <label class="block text-left text-xs text-gray-500">
+                Event date (optional)
+                <input
+                  v-model="newCategoryDate"
+                  type="date"
+                  class="mt-1 w-full px-3 py-2 border rounded-lg text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </label>
               <p v-if="categoryError" class="text-red-600 text-xs">{{ categoryError }}</p>
               <div class="flex gap-2 justify-center">
                 <button type="submit" :disabled="!newCategoryName.trim() || savingCategory" class="px-3 py-1.5 bg-primary text-white rounded text-xs font-medium disabled:opacity-50">
                   {{ savingCategory ? 'Adding…' : 'Add' }}
                 </button>
-                <button type="button" class="px-3 py-1.5 bg-gray-200 rounded text-xs font-medium" @click="creatingCategory = false; newCategoryName = ''; categoryError = ''">Cancel</button>
+                <button type="button" class="px-3 py-1.5 bg-gray-200 rounded text-xs font-medium" @click="creatingCategory = false; newCategoryName = ''; newCategoryDate = ''; categoryError = ''">Cancel</button>
               </div>
             </form>
           </div>
         </div>
 
         <div v-if="!categories.length && !uncategorizedCount" class="text-center py-6">
-          <p class="text-gray-500">No photos yet. Create a category, then upload photos into it.</p>
+          <p class="text-gray-500">No photos yet. Create an album for an event, then upload photos into it.</p>
         </div>
       </template>
 
-      <!-- ===== Category view ===== -->
+      <!-- ===== Album view ===== -->
       <template v-else>
         <div class="bg-white rounded-lg shadow p-4 sm:p-6 space-y-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="min-w-0">
-              <form v-if="renaming" class="flex flex-wrap items-center gap-2" @submit.prevent="renameCategory">
-                <input
-                  v-model="renameValue"
-                  type="text"
-                  maxlength="100"
-                  class="px-3 py-1.5 border rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
-                  autofocus
-                />
-                <button type="submit" class="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium">Save</button>
-                <button type="button" class="px-3 py-1.5 text-sm text-gray-600" @click="renaming = false">Cancel</button>
-                <p v-if="renameError" class="w-full text-red-600 text-xs">{{ renameError }}</p>
-              </form>
-              <h2 v-else class="text-xl font-bold text-dark truncate">{{ currentCategoryName }}</h2>
+              <h2 class="text-xl font-bold text-dark truncate">{{ currentCategoryName }}</h2>
               <p class="text-sm text-gray-500">
+                <template v-if="currentCategory?.event_date">{{ formatDate(currentCategory.event_date) }} · </template>
                 {{ images.total }} photo{{ images.total !== 1 ? 's' : '' }}
                 <template v-if="needsDescriptionCount"> · <span class="text-amber-700">{{ needsDescriptionCount }} on this page need a description</span></template>
               </p>
             </div>
-            <div v-if="currentCategory && canManage && !renaming" class="flex gap-2">
-              <button type="button" class="px-3 py-1.5 border border-gray-300 hover:border-primary hover:text-primary rounded-lg text-sm font-medium" @click="startRename">
-                Rename
+            <div v-if="currentCategory && !renaming" class="flex flex-wrap gap-2">
+              <a
+                v-if="currentCategory.slug && images.total"
+                :href="`/gallery/${currentCategory.slug}`"
+                target="_blank"
+                rel="noopener"
+                class="px-3 py-1.5 border border-gray-300 hover:border-primary hover:text-primary rounded-lg text-sm font-medium"
+              >View on site ↗</a>
+              <button v-if="canManage" type="button" class="px-3 py-1.5 border border-gray-300 hover:border-primary hover:text-primary rounded-lg text-sm font-medium" @click="startRename">
+                Edit album
               </button>
               <button v-if="canDelete" type="button" class="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium" @click="deleteCategory">
-                Delete category
+                Delete album
               </button>
             </div>
           </div>
+
+          <form v-if="renaming" class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t pt-5" @submit.prevent="renameCategory">
+            <div class="sm:col-span-2">
+              <label for="album-name" class="block text-sm font-medium text-dark mb-1">Album name</label>
+              <input
+                id="album-name"
+                v-model="albumForm.name"
+                type="text"
+                maxlength="100"
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                autofocus
+              />
+              <p v-if="albumForm.errors.name" class="text-red-600 text-xs mt-1">{{ albumForm.errors.name }}</p>
+            </div>
+            <div>
+              <label for="album-date" class="block text-sm font-medium text-dark mb-1">Event date</label>
+              <input id="album-date" v-model="albumForm.event_date" type="date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+              <p v-if="albumForm.errors.event_date" class="text-red-600 text-xs mt-1">{{ albumForm.errors.event_date }}</p>
+            </div>
+            <div class="sm:col-span-3">
+              <label for="album-description" class="block text-sm font-medium text-dark mb-1">Description</label>
+              <textarea
+                id="album-description"
+                v-model="albumForm.description"
+                rows="3"
+                maxlength="1000"
+                placeholder="A sentence or two about the event, shown at the top of the album page"
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <p v-if="albumForm.errors.description" class="text-red-600 text-xs mt-1">{{ albumForm.errors.description }}</p>
+            </div>
+            <div class="sm:col-span-3 flex gap-2 justify-end">
+              <button type="button" class="px-3 py-1.5 text-sm text-gray-600" @click="renaming = false">Cancel</button>
+              <button type="submit" :disabled="albumForm.processing" class="px-4 py-1.5 bg-primary text-white rounded-lg text-sm font-medium disabled:opacity-50">
+                {{ albumForm.processing ? 'Saving…' : 'Save album' }}
+              </button>
+            </div>
+          </form>
 
           <GalleryUploader
             v-if="currentCategory && canManage"
@@ -157,14 +201,53 @@
             compact
           />
           <p v-else-if="selectedCategory === 'uncategorized'" class="text-sm text-amber-700">
-            These photos lost their category. Open each one and choose a new category.
+            These photos aren't in an album. Open each one and choose an album.
           </p>
         </div>
 
+        <!-- Bulk move -->
+        <div v-if="canManage && images.data.length" class="flex flex-wrap items-center gap-2">
+          <button
+            v-if="!selecting"
+            type="button"
+            class="px-3 py-1.5 border border-gray-300 bg-white hover:border-primary hover:text-primary rounded-lg text-sm font-medium"
+            @click="selecting = true"
+          >
+            Select photos to move
+          </button>
+          <template v-else>
+            <span class="text-sm text-gray-600">Click photos to select them.</span>
+            <button type="button" class="px-3 py-1.5 border border-gray-300 bg-white hover:border-primary hover:text-primary rounded-lg text-sm font-medium" @click="selectAllOnPage">
+              {{ allOnPageSelected ? 'Unselect' : 'Select' }} all on this page ({{ images.data.length }})
+            </button>
+          </template>
+        </div>
+
         <!-- Images -->
-        <div v-if="images.data.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          <div v-for="img in images.data" :key="img.id" class="bg-white rounded-lg shadow overflow-hidden flex flex-col">
-            <Link :href="`/admin/gallery/${img.id}/edit`" class="relative block aspect-square bg-gray-100">
+        <div v-if="images.data.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" :class="{ 'pb-24': selecting }">
+          <div
+            v-for="img in images.data"
+            :key="img.id"
+            class="bg-white rounded-lg shadow overflow-hidden flex flex-col"
+            :class="{ 'ring-4 ring-primary': selected.has(img.id) }"
+          >
+            <button
+              v-if="selecting"
+              type="button"
+              class="relative block aspect-square bg-gray-100 w-full"
+              :aria-pressed="selected.has(img.id)"
+              :aria-label="`${selected.has(img.id) ? 'Unselect' : 'Select'} photo${img.alt_text ? ': ' + img.alt_text : ''}`"
+              @click="toggleSelected(img.id)"
+            >
+              <img v-if="!failedImages.has(img.id)" :src="img.image_url" alt="" class="w-full h-full object-cover" loading="lazy" @error="failedImages.add(img.id)" />
+              <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-xs">Image file missing</div>
+              <span
+                class="absolute top-2 right-2 w-6 h-6 rounded border-2 flex items-center justify-center text-sm font-bold"
+                :class="selected.has(img.id) ? 'bg-primary border-primary text-white' : 'bg-white/90 border-gray-400'"
+                aria-hidden="true"
+              >{{ selected.has(img.id) ? '✓' : '' }}</span>
+            </button>
+            <Link v-else :href="`/admin/gallery/${img.id}/edit`" class="relative block aspect-square bg-gray-100">
               <img
                 v-if="!failedImages.has(img.id)"
                 :src="img.image_url"
@@ -229,9 +312,34 @@
             </div>
           </div>
         </div>
-        <div v-else class="text-center py-10 text-gray-500">No photos in this category yet.</div>
+        <div v-else class="text-center py-10 text-gray-500">No photos in this album yet.</div>
 
         <Pagination v-if="images.last_page > 1" :links="images.links" />
+
+        <!-- Move toolbar, pinned to the bottom while selecting -->
+        <div v-if="selecting" class="fixed bottom-0 inset-x-0 z-40 bg-white border-t shadow-lg">
+          <form class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3" @submit.prevent="moveSelected">
+            <span class="text-sm font-semibold text-dark">{{ selected.size }} selected</span>
+            <label for="move-target" class="sr-only">Move to album</label>
+            <select
+              id="move-target"
+              v-model="moveTarget"
+              class="flex-1 min-w-[12rem] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option :value="null" disabled>Move to album…</option>
+              <option v-for="cat in moveTargets" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+            </select>
+            <button
+              type="submit"
+              :disabled="!selected.size || !moveTarget || moving"
+              class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              {{ moving ? 'Moving…' : 'Move' }}
+            </button>
+            <button type="button" class="px-3 py-2 text-sm text-gray-600 hover:text-dark" @click="cancelSelecting">Cancel</button>
+            <p v-if="moveError" class="w-full text-red-600 text-xs">{{ moveError }}</p>
+          </form>
+        </div>
       </template>
     </div>
   </AdminLayout>
@@ -239,7 +347,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { usePage, router, Link } from '@inertiajs/vue3'
+import { usePage, useForm, router, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
 import Pagination from '@/Components/Pagination.vue'
@@ -266,12 +374,55 @@ const canManage = computed(() => ['admin', 'editor'].includes(role.value))
 const canDelete = computed(() => role.value === 'admin')
 
 const currentCategory = computed(() => props.categories.find(c => String(c.id) === String(props.selectedCategory)) || null)
-const currentCategoryName = computed(() => currentCategory.value?.name || 'Uncategorized')
+const currentCategoryName = computed(() => currentCategory.value?.name || 'No album')
 const needsDescriptionCount = computed(() => (props.images?.data || []).filter(i => i.needs_description).length)
 
 const uploadHref = computed(() =>
   currentCategory.value ? `/admin/gallery/create?category_id=${currentCategory.value.id}` : '/admin/gallery/create'
 )
+
+// --- Bulk move ---
+const selecting = ref(false)
+const selected = ref(new Set())
+const moveTarget = ref(null)
+const moving = ref(false)
+const moveError = ref('')
+
+const moveTargets = computed(() => props.categories.filter((c) => String(c.id) !== String(props.selectedCategory)))
+const allOnPageSelected = computed(() => !!props.images?.data.length && props.images.data.every((i) => selected.value.has(i.id)))
+
+const toggleSelected = (id) => {
+  const next = new Set(selected.value)
+  next.has(id) ? next.delete(id) : next.add(id)
+  selected.value = next
+}
+
+const selectAllOnPage = () => {
+  const next = new Set(selected.value)
+  const ids = props.images.data.map((i) => i.id)
+  if (allOnPageSelected.value) ids.forEach((id) => next.delete(id))
+  else ids.forEach((id) => next.add(id))
+  selected.value = next
+}
+
+const cancelSelecting = () => {
+  selecting.value = false
+  selected.value = new Set()
+  moveTarget.value = null
+  moveError.value = ''
+}
+
+const moveSelected = () => {
+  if (!selected.value.size || !moveTarget.value) return
+  moving.value = true
+  moveError.value = ''
+  router.post('/admin/gallery/bulk-move', { ids: [...selected.value], category_id: moveTarget.value }, {
+    preserveScroll: true,
+    onSuccess: cancelSelecting,
+    onError: (errors) => { moveError.value = Object.values(errors)[0] || 'Could not move the photos.' },
+    onFinish: () => { moving.value = false },
+  })
+}
 
 const act = (img, action) => {
   busyId.value = img.id
@@ -290,9 +441,12 @@ const deleteImage = async (img) => {
   if (ok) router.delete(`/admin/gallery/${img.id}`, { preserveScroll: true })
 }
 
-// --- Categories ---
+// --- Albums ---
+const formatDate = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+
 const creatingCategory = ref(false)
 const newCategoryName = ref('')
+const newCategoryDate = ref('')
 const savingCategory = ref(false)
 const categoryError = ref('')
 
@@ -311,11 +465,11 @@ const createCategory = async () => {
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
       },
       credentials: 'same-origin',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, event_date: newCategoryDate.value || null }),
     })
     const data = await response.json()
     if (!response.ok) {
-      categoryError.value = data.errors?.name?.[0] ?? data.message ?? 'Could not add category.'
+      categoryError.value = data.errors?.name?.[0] ?? data.message ?? 'Could not add album.'
       return
     }
     router.visit(`/admin/gallery?category=${data.id}`)
@@ -327,29 +481,34 @@ const createCategory = async () => {
 }
 
 const renaming = ref(false)
-const renameValue = ref('')
-const renameError = ref('')
+const albumForm = useForm({ name: '', event_date: '', description: '' })
 
 const startRename = () => {
-  renameValue.value = currentCategory.value.name
-  renameError.value = ''
+  albumForm.defaults({
+    name: currentCategory.value.name,
+    event_date: currentCategory.value.event_date || '',
+    description: currentCategory.value.description || '',
+  })
+  albumForm.reset()
+  albumForm.clearErrors()
   renaming.value = true
 }
 
 const renameCategory = () => {
-  router.patch(`/admin/gallery-categories/${currentCategory.value.id}`, { name: renameValue.value.trim() }, {
-    preserveScroll: true,
-    onSuccess: () => { renaming.value = false },
-    onError: (errors) => { renameError.value = errors.name || 'Could not rename.' },
-  })
+  albumForm
+    .transform((data) => ({ ...data, name: data.name.trim(), event_date: data.event_date || null }))
+    .patch(`/admin/gallery-categories/${currentCategory.value.id}`, {
+      preserveScroll: true,
+      onSuccess: () => { renaming.value = false },
+    })
 }
 
 const deleteCategory = async () => {
   const count = currentCategory.value.gallery_images_count
   const message = count
-    ? `Delete "${currentCategory.value.name}"? Its ${count} photo${count !== 1 ? 's' : ''} will be kept but moved to Uncategorized.`
-    : `Delete the empty category "${currentCategory.value.name}"?`
-  const ok = await confirmDialog.value.open('Delete category', message, { confirmText: 'Delete category', isDangerous: true })
+    ? `Delete the album "${currentCategory.value.name}"? Its ${count} photo${count !== 1 ? 's' : ''} will be kept but moved to "No album".`
+    : `Delete the empty album "${currentCategory.value.name}"?`
+  const ok = await confirmDialog.value.open('Delete album', message, { confirmText: 'Delete album', isDangerous: true })
   if (ok) router.delete(`/admin/gallery-categories/${currentCategory.value.id}`)
 }
 </script>

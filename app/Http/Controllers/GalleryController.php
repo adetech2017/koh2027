@@ -4,47 +4,76 @@ namespace App\Http\Controllers;
 
 use App\Models\GalleryImage;
 use App\Models\ImageCategory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class GalleryController extends Controller
 {
-    public function index(Request $request): Response
+    // Album cards plus every photo, newest first
+    public function index(Request $request): Response|RedirectResponse
     {
-        $query = GalleryImage::active()->with('category');
-
+        // Old links filtered by category name (?category=Events); send them to that album
         if ($request->filled('category')) {
-            $query->whereHas('category', fn ($q) => $q->where('name', $request->category));
+            $album = ImageCategory::where('name', $request->query('category'))->first();
+
+            return $album ? redirect()->route('gallery.album', $album->slug, 301) : redirect()->route('gallery');
         }
 
-        $images = $query->orderBy('sort_order')->orderBy('id')->paginate(24)->withQueryString();
-
-        // Only categories with visible photos, with their counts
-        $categories = ImageCategory::withCount(['galleryImages' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('name')
-            ->get()
-            ->filter(fn ($c) => $c->gallery_images_count > 0)
-            ->map(fn ($c) => ['name' => $c->name, 'count' => $c->gallery_images_count])
-            ->values();
+        $images = GalleryImage::active()->with('category')->newestFirst()->paginate(24)->withQueryString();
 
         return Inertia::render('Gallery', [
-            'images' => $images->through(fn ($img) => [
-                'id' => $img->id,
-                'title' => $img->title,
-                'alt_text' => $img->alt_text,
-                'event_label' => $img->event_label,
-                'image_url' => $img->image_url,
-                'thumbnail_url' => $img->thumbnail_url,
-                'category' => $img->category?->name,
-            ]),
-            'filters' => $request->only(['category']),
-            'categories' => $categories,
-            'total' => GalleryImage::active()->count(),
+            'albums' => $this->albumCards(),
+            'images' => $images->through(fn ($img) => $img->toPublicArray()),
+            'album' => null,
         ])->withViewData(['meta' => [
             'title' => 'Campaign Gallery — KOH 2027',
             'description' => 'Photos from rallies, town halls and community visits across Lagos State.',
             'image' => $images->first()['image_url'] ?? null,
         ]]);
+    }
+
+    public function album(ImageCategory $album): Response
+    {
+        $images = $album->galleryImages()->active()->with('category')->newestFirst()->paginate(48)->withQueryString();
+        abort_if($images->total() === 0, 404);
+
+        return Inertia::render('Gallery', [
+            'albums' => $this->albumCards(),
+            'images' => $images->through(fn ($img) => $img->toPublicArray()),
+            'album' => [
+                'name' => $album->name,
+                'slug' => $album->slug,
+                'description' => $album->description,
+                'event_date' => $album->event_date?->toDateString(),
+                'count' => $images->total(),
+            ],
+        ])->withViewData(['meta' => [
+            'title' => "{$album->name} — KOH 2027 Gallery",
+            'description' => $album->description ?: "Photos from {$album->name}.",
+            'image' => $images->first()['image_url'] ?? null,
+        ]]);
+    }
+
+    private function albumCards()
+    {
+        $albums = ImageCategory::forPublic()->get();
+
+        // Cover = the album's newest visible photo
+        $covers = GalleryImage::active()
+            ->whereIn('category_id', $albums->pluck('id'))
+            ->newestFirst()
+            ->get(['id', 'category_id', 'image_path', 'thumbnail_path'])
+            ->unique('category_id')
+            ->keyBy('category_id');
+
+        return $albums->map(fn ($album) => [
+            'name' => $album->name,
+            'slug' => $album->slug,
+            'event_date' => $album->event_date?->toDateString(),
+            'count' => $album->gallery_images_count,
+            'cover_url' => $covers->get($album->id)?->thumbnail_url ?? $covers->get($album->id)?->image_url,
+        ])->values();
     }
 }

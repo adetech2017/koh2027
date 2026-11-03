@@ -22,7 +22,36 @@ class GalleryImage extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true)->orderBy('sort_order');
+        return $query->where('is_active', true);
+    }
+
+    // Most recently added first, everywhere photos are listed
+    public function scopeNewestFirst(Builder $query): Builder
+    {
+        return $query->orderByDesc('created_at')->orderByDesc('id');
+    }
+
+    // What the public site needs to show a photo and its caption
+    public function toPublicArray(): array
+    {
+        return [
+            'id' => $this->id,
+            // Older uploads stored the filename as the title or description; never show those
+            'title' => self::isFilename($this->title) ? null : $this->title,
+            'alt_text' => self::isFilename($this->alt_text) ? '' : $this->alt_text,
+            'event_label' => $this->event_label,
+            'taken_on' => $this->taken_on?->toDateString(),
+            'image_url' => $this->image_url,
+            'thumbnail_url' => $this->thumbnail_url,
+            'album' => $this->relationLoaded('category') && $this->category
+                ? ['name' => $this->category->name, 'slug' => $this->category->slug]
+                : null,
+        ];
+    }
+
+    public static function isFilename(?string $text): bool
+    {
+        return (bool) preg_match('/\.(jpe?g|png|gif|webp)$/i', (string) $text);
     }
 
     public function category(): BelongsTo

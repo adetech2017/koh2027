@@ -1,6 +1,6 @@
 <template>
   <div class="w-full md:w-56 flex-shrink-0 md:border-r md:pr-4">
-    <h3 class="text-sm font-semibold text-dark mb-3">Category</h3>
+    <h3 class="text-sm font-semibold text-dark mb-3">Album</h3>
 
     <div class="space-y-1 mb-4 max-h-64 overflow-y-auto">
       <label
@@ -20,23 +20,32 @@
         </span>
         <span class="text-gray-400 text-xs flex-shrink-0">{{ cat.gallery_images_count ?? 0 }}</span>
       </label>
-      <p v-if="localCategories.length === 0" class="text-xs text-gray-400 px-3 py-2">No categories yet.</p>
+      <p v-if="localCategories.length === 0" class="text-xs text-gray-400 px-3 py-2">No albums yet.</p>
     </div>
 
     <div v-if="!creatingNew">
       <button type="button" @click="creatingNew = true" class="text-sm text-primary hover:text-primary-dark font-medium">
-        + New category
+        + New album
       </button>
     </div>
     <div v-else class="space-y-2">
       <input
         v-model="newCategoryName"
         type="text"
-        placeholder="Category name"
+        placeholder="e.g. Manifesto Unveiling"
         class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         :disabled="creating"
         @keydown.enter.prevent="confirmNewCategory"
       />
+      <label class="block text-xs text-gray-500">
+        Event date (optional)
+        <input
+          v-model="newCategoryDate"
+          type="date"
+          class="mt-1 w-full px-3 py-2 border rounded-lg text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+          :disabled="creating"
+        />
+      </label>
       <p v-if="createError" class="text-red-600 text-xs">{{ createError }}</p>
       <div class="flex gap-2">
         <button
@@ -80,6 +89,7 @@ watch(() => props.categories, (val) => {
 
 const creatingNew = ref(false)
 const newCategoryName = ref('')
+const newCategoryDate = ref('')
 const creating = ref(false)
 const createError = ref('')
 
@@ -104,19 +114,20 @@ async function confirmNewCategory() {
         'X-CSRF-TOKEN': token ?? '',
       },
       credentials: 'same-origin',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, event_date: newCategoryDate.value || null }),
     })
 
     const data = await response.json()
 
     if (!response.ok) {
-      createError.value = data.errors?.name?.[0] ?? data.message ?? 'Could not add category.'
+      createError.value = data.errors?.name?.[0] ?? data.message ?? 'Could not add album.'
       return
     }
 
-    localCategories.value.push({ ...data, gallery_images_count: 0 })
+    localCategories.value.unshift({ ...data, gallery_images_count: 0 })
     emit('update:modelValue', data.id)
     newCategoryName.value = ''
+    newCategoryDate.value = ''
     creatingNew.value = false
   } catch (e) {
     createError.value = 'Could not reach the server. Please try again.'
@@ -127,6 +138,7 @@ async function confirmNewCategory() {
 
 function cancelNewCategory() {
   newCategoryName.value = ''
+  newCategoryDate.value = ''
   creatingNew.value = false
   createError.value = ''
 }
