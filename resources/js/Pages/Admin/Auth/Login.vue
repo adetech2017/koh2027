@@ -3,7 +3,13 @@
     <div class="w-full max-w-md">
       <!-- Logo & Title -->
       <div class="text-center mb-8">
-        <h1 class="text-5xl font-bold text-gold">KOH 2027</h1>
+        <img
+          v-if="page.props.logoUrl"
+          :src="page.props.logoUrl"
+          alt="PBAT-KOH 2027"
+          class="h-24 w-auto mx-auto rounded-lg ring-1 ring-white/30 shadow-lg"
+        />
+        <h1 v-else class="text-5xl font-bold text-gold">KOH 2027</h1>
       </div>
 
       <!-- Login Card -->
@@ -82,7 +88,9 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, usePage } from '@inertiajs/vue3'
+
+const page = usePage()
 
 const form = useForm({
   email: '',

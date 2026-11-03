@@ -17,8 +17,15 @@
     >
       <div class="p-6 border-b border-primary-dark flex items-start justify-between">
         <div>
-          <h1 class="text-2xl font-bold">KOH 2027</h1>
-          <p class="text-sm text-gray-300">Admin Panel</p>
+          <Link href="/admin" class="block">
+            <img
+              v-if="page.props.logoUrl"
+              :src="page.props.logoUrl"
+              alt="PBAT-KOH 2027"
+              class="h-14 w-auto rounded-md ring-1 ring-white/30"
+            />
+            <h1 v-else class="text-2xl font-bold">KOH 2027</h1>
+          </Link>
         </div>
         <button
           type="button"

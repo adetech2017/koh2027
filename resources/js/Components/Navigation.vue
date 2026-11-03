@@ -7,8 +7,8 @@
           <img
             v-if="page.props.logoUrl"
             :src="page.props.logoUrl"
-            alt="Kadri Obafemi Hamzat 2027"
-            class="h-10 md:h-14 w-auto max-w-[11rem] object-contain"
+            alt="PBAT-KOH 2027"
+            class="h-11 md:h-14 w-auto rounded-md"
           />
           <template v-else>
             <div class="w-10 h-10 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">

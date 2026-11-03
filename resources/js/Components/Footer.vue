@@ -4,10 +4,13 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <!-- Brand -->
         <div>
-          <!-- White plate so a full-colour logo stays legible on the dark footer -->
-          <div v-if="page.props.logoUrl" class="inline-block bg-white rounded-lg px-3 py-2 mb-4">
-            <img :src="page.props.logoUrl" alt="Kadri Obafemi Hamzat 2027" class="h-12 w-auto max-w-[10rem] object-contain" loading="lazy" />
-          </div>
+          <img
+            v-if="page.props.logoUrl"
+            :src="page.props.logoUrl"
+            alt="PBAT-KOH 2027"
+            class="h-16 w-auto rounded-md mb-4"
+            loading="lazy"
+          />
           <div v-else class="w-12 h-12 bg-gold rounded flex items-center justify-center text-dark font-bold text-lg mb-4">
             KOH
           </div>
