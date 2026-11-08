@@ -56,7 +56,7 @@
         </div>
         <div v-else-if="form.status === 'published'">
           <label for="n-date" class="block text-sm font-medium text-dark mb-1">Publish date</label>
-          <input id="n-date" v-model="form.published_at" type="datetime-local" :max="nowLocal" :class="inputClass('published_at')" />
+          <input id="n-date" v-model="form.published_at" type="datetime-local" :class="inputClass('published_at')" />
           <p v-if="form.errors.published_at" class="text-red-600 text-sm mt-1">{{ form.errors.published_at }}</p>
           <p v-else class="text-xs text-gray-500 mt-1">Shown on the article. Pick an earlier date to backdate it, or leave empty to use the current time.</p>
         </div>

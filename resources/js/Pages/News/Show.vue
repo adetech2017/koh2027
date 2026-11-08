@@ -48,6 +48,7 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import NewsCard from '@/Components/NewsCard.vue'
 import ShareButtons from '@/Components/ShareButtons.vue'
 import { categoryLabel, longDate } from '@/Utils/format'
+import { applyLinkTargets } from '@/Utils/links'
 
 const props = defineProps({
   article: { type: Object, required: true },
@@ -57,8 +58,11 @@ const props = defineProps({
 
 const imageFailed = ref(false)
 
-// The body is HTML from the admin editor; strip anything that could run script
-const safeBody = computed(() => DOMPurify.sanitize(props.article.body || '', { USE_PROFILES: { html: true } }))
+// The body is HTML from the admin editor; strip anything that could run script,
+// then apply each link's new-tab / same-tab choice
+const safeBody = computed(() =>
+  applyLinkTargets(DOMPurify.sanitize(props.article.body || '', { USE_PROFILES: { html: true }, ADD_ATTR: ['target'] }))
+)
 
 const readMinutes = computed(() => {
   const words = (props.article.body || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length

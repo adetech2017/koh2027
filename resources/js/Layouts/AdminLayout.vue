@@ -90,6 +90,49 @@
           </svg>
         </button>
         <h2 class="text-xl sm:text-2xl font-bold text-dark truncate">{{ pageTitle }}</h2>
+
+        <!-- User menu -->
+        <div v-if="auth && auth.user" ref="userMenuRef" class="relative ml-auto shrink-0">
+          <button
+            type="button"
+            class="flex items-center gap-2 rounded-full p-0.5 pr-2 hover:bg-light-gray focus:outline-none focus:ring-2 focus:ring-primary"
+            :aria-expanded="userMenuOpen"
+            aria-haspopup="menu"
+            aria-label="Account menu"
+            @click="userMenuOpen = !userMenuOpen"
+          >
+            <span class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold select-none">
+              {{ initials }}
+            </span>
+            <span class="hidden sm:block text-sm font-medium text-dark max-w-[10rem] truncate">{{ auth.user.name }}</span>
+            <svg class="hidden sm:block w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <div
+            v-if="userMenuOpen"
+            role="menu"
+            class="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg ring-1 ring-black/5 z-50 overflow-hidden"
+          >
+            <div class="px-4 py-3 border-b border-light-gray flex items-center gap-3">
+              <span class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">
+                {{ initials }}
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-dark truncate">{{ auth.user.name }}</p>
+                <p v-if="auth.user.email" class="text-xs text-gray-500 truncate">{{ auth.user.email }}</p>
+                <p class="text-xs text-gray-500 capitalize">{{ auth.user.role }}</p>
+              </div>
+            </div>
+            <form action="/admin/logout" method="POST">
+              <input type="hidden" name="_token" :value="csrf_token">
+              <button type="submit" role="menuitem" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
+                Logout
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
 
       <!-- Flash Messages -->
@@ -108,7 +151,7 @@
 
 <script setup>
 import { usePage, Link } from '@inertiajs/vue3'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import FlashMessage from '@/Components/FlashMessage.vue'
 
 const page = usePage()
@@ -198,6 +241,32 @@ const pageTitle = computed(() => {
   return item ? (item.title || item.label) : 'Admin'
 })
 
-// Close the mobile drawer after navigating
-watch(() => page.url, () => { sidebarOpen.value = false })
+// Avatar: up to two initials from the user's name
+const initials = computed(() => {
+  const parts = (auth.value?.user?.name || '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '?'
+  const letters = parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)
+  return letters.toUpperCase()
+})
+
+const userMenuOpen = ref(false)
+const userMenuRef = ref(null)
+const onDocClick = (e) => {
+  if (userMenuOpen.value && userMenuRef.value && !userMenuRef.value.contains(e.target)) userMenuOpen.value = false
+}
+const onKeydown = (e) => { if (e.key === 'Escape') userMenuOpen.value = false }
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeydown)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeydown)
+})
+
+// Close the mobile drawer and user menu after navigating
+watch(() => page.url, () => {
+  sidebarOpen.value = false
+  userMenuOpen.value = false
+})
 </script>

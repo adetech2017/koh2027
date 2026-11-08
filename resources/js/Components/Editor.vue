@@ -4,6 +4,7 @@
     <div v-if="editor" class="editor-toolbar">
       <div class="toolbar-group">
         <button
+          type="button"
           @click="editor.chain().focus().toggleBold().run()"
           :class="{ active: editor.isActive('bold') }"
           class="toolbar-button"
@@ -12,6 +13,7 @@
           <strong>B</strong>
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleItalic().run()"
           :class="{ active: editor.isActive('italic') }"
           class="toolbar-button"
@@ -20,6 +22,7 @@
           <em>I</em>
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleUnderline().run()"
           :class="{ active: editor.isActive('underline') }"
           class="toolbar-button"
@@ -28,6 +31,7 @@
           <u>U</u>
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleStrike().run()"
           :class="{ active: editor.isActive('strike') }"
           class="toolbar-button"
@@ -35,12 +39,22 @@
         >
           <s>S</s>
         </button>
+        <button
+          type="button"
+          @click="openLinkPanel"
+          :class="{ active: editor.isActive('link') || linkPanel.open }"
+          class="toolbar-button"
+          title="Add / edit link (Ctrl+K)"
+        >
+          🔗 Link
+        </button>
       </div>
 
       <div class="toolbar-divider"></div>
 
       <div class="toolbar-group">
         <button
+          type="button"
           @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
           :class="{ active: editor.isActive('heading', { level: 1 }) }"
           class="toolbar-button"
@@ -49,6 +63,7 @@
           H1
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
           :class="{ active: editor.isActive('heading', { level: 2 }) }"
           class="toolbar-button"
@@ -57,6 +72,7 @@
           H2
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
           :class="{ active: editor.isActive('heading', { level: 3 }) }"
           class="toolbar-button"
@@ -70,6 +86,7 @@
 
       <div class="toolbar-group">
         <button
+          type="button"
           @click="editor.chain().focus().toggleBulletList().run()"
           :class="{ active: editor.isActive('bulletList') }"
           class="toolbar-button"
@@ -78,6 +95,7 @@
           • List
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleOrderedList().run()"
           :class="{ active: editor.isActive('orderedList') }"
           class="toolbar-button"
@@ -86,6 +104,7 @@
           1. List
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleBlockquote().run()"
           :class="{ active: editor.isActive('blockquote') }"
           class="toolbar-button"
@@ -94,6 +113,7 @@
           "
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().toggleCodeBlock().run()"
           :class="{ active: editor.isActive('codeBlock') }"
           class="toolbar-button"
@@ -107,6 +127,7 @@
 
       <div class="toolbar-group">
         <button
+          type="button"
           @click="editor.chain().focus().undo().run()"
           class="toolbar-button"
           title="Undo (Ctrl+Z)"
@@ -114,11 +135,60 @@
           ↶
         </button>
         <button
+          type="button"
           @click="editor.chain().focus().redo().run()"
           class="toolbar-button"
           title="Redo (Ctrl+Y)"
         >
           ↷
+        </button>
+      </div>
+    </div>
+
+    <!-- Link panel -->
+    <div v-if="editor && linkPanel.open" class="link-panel" @keydown.esc.prevent="closeLinkPanel">
+      <div class="link-panel-fields">
+        <label class="link-field">
+          <span class="link-label">URL</span>
+          <input
+            ref="linkUrlInput"
+            v-model="linkPanel.url"
+            type="text"
+            inputmode="url"
+            placeholder="https://example.com"
+            class="link-input"
+            @keydown.enter.prevent="applyLink"
+          />
+        </label>
+        <label v-if="linkPanel.needsText" class="link-field">
+          <span class="link-label">Text to display</span>
+          <input
+            v-model="linkPanel.text"
+            type="text"
+            placeholder="Defaults to the URL"
+            class="link-input"
+            @keydown.enter.prevent="applyLink"
+          />
+        </label>
+      </div>
+      <label class="link-checkbox">
+        <input v-model="linkPanel.newTab" type="checkbox" @change="linkPanel.newTabTouched = true" />
+        <span>Open in new tab</span>
+      </label>
+      <p v-if="linkPanel.error" class="link-error">{{ linkPanel.error }}</p>
+      <div class="link-panel-actions">
+        <button
+          v-if="linkPanel.editing"
+          type="button"
+          class="link-btn link-btn-danger"
+          @click="removeLink"
+        >
+          Remove link
+        </button>
+        <span class="link-spacer"></span>
+        <button type="button" class="link-btn" @click="closeLinkPanel">Cancel</button>
+        <button type="button" class="link-btn link-btn-primary" @click="applyLink">
+          {{ linkPanel.editing ? 'Update' : 'Add link' }}
         </button>
       </div>
     </div>
@@ -131,7 +201,8 @@
 <script setup>
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
-import { watch } from 'vue'
+import { watch, reactive, ref, nextTick } from 'vue'
+import { isExternalUrl } from '@/Utils/links'
 
 const props = defineProps({
   modelValue: {
@@ -149,12 +220,123 @@ const editor = useEditor({
       heading: {
         levels: [1, 2, 3, 4, 5, 6],
       },
+      link: {
+        openOnClick: false,
+        autolink: true,
+        defaultProtocol: 'https',
+        // No default target/rel: keep exactly what each link was saved with.
+        // Links without a target (e.g. pasted URLs) get the external => new tab rule on the public page.
+        HTMLAttributes: { target: null, rel: null, class: null },
+      },
     }),
   ],
+  editorProps: {
+    handleKeyDown: (_view, event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        openLinkPanel()
+        return true
+      }
+      return false
+    },
+  },
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   },
 })
+
+const linkUrlInput = ref(null)
+const linkPanel = reactive({
+  open: false,
+  url: '',
+  text: '',
+  needsText: false,
+  editing: false,
+  newTab: false,
+  newTabTouched: false,
+  error: '',
+  from: 0,
+  to: 0,
+})
+
+// Until the writer ticks/unticks the box, follow the URL: other websites => new tab
+watch(
+  () => linkPanel.url,
+  (url) => {
+    if (linkPanel.open && !linkPanel.newTabTouched) linkPanel.newTab = isExternalUrl(normaliseUrl(url))
+  }
+)
+
+function openLinkPanel() {
+  const ed = editor.value
+  if (!ed) return
+
+  // Grow the selection to the whole link when the cursor is inside one
+  if (ed.isActive('link')) ed.chain().extendMarkRange('link').run()
+
+  const { from, to, empty } = ed.state.selection
+  const attrs = ed.getAttributes('link')
+  const editing = ed.isActive('link')
+  // Existing link with a saved choice keeps it; otherwise follow the URL rule
+  const savedTarget = editing && (attrs.target === '_blank' || attrs.target === '_self') ? attrs.target : null
+  Object.assign(linkPanel, {
+    open: true,
+    url: attrs.href || '',
+    text: '',
+    needsText: empty,
+    editing,
+    newTab: savedTarget ? savedTarget === '_blank' : isExternalUrl(attrs.href || ''),
+    newTabTouched: !!savedTarget,
+    error: '',
+    from,
+    to,
+  })
+  nextTick(() => linkUrlInput.value?.focus())
+}
+
+function closeLinkPanel() {
+  linkPanel.open = false
+  editor.value?.chain().focus().setTextSelection({ from: linkPanel.from, to: linkPanel.to }).run()
+}
+
+function normaliseUrl(raw) {
+  const url = raw.trim()
+  if (!url) return ''
+  return /^(https?:\/\/|mailto:|tel:|\/|#)/i.test(url) ? url : `https://${url}`
+}
+
+function applyLink() {
+  const href = normaliseUrl(linkPanel.url)
+  if (!href) {
+    linkPanel.error = 'Enter a URL.'
+    linkUrlInput.value?.focus()
+    return
+  }
+
+  const attrs = linkPanel.newTab
+    ? { href, target: '_blank', rel: 'noopener noreferrer' }
+    : { href, target: '_self', rel: null }
+  const chain = editor.value.chain().focus().setTextSelection({ from: linkPanel.from, to: linkPanel.to })
+
+  if (linkPanel.needsText) {
+    const text = linkPanel.text.trim() || linkPanel.url.trim()
+    chain.insertContent({ type: 'text', text, marks: [{ type: 'link', attrs }] }).run()
+  } else {
+    chain.extendMarkRange('link').setLink(attrs).run()
+  }
+  linkPanel.open = false
+}
+
+function removeLink() {
+  editor.value
+    .chain()
+    .focus()
+    .setTextSelection({ from: linkPanel.from, to: linkPanel.to })
+    .extendMarkRange('link')
+    .unsetLink()
+    .run()
+  linkPanel.open = false
+}
 
 watch(
   () => props.modelValue,
@@ -218,6 +400,115 @@ watch(
   background-color: #3b82f6;
   color: white;
   border-color: #2563eb;
+}
+
+.link-panel {
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.link-panel-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.link-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 14rem;
+}
+
+.link-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.link-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background-color: white;
+  color: #1f2937;
+}
+
+.link-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.link-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.link-error {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: #dc2626;
+}
+
+.link-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.link-spacer {
+  flex: 1;
+}
+
+.link-btn {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.link-btn-primary {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+  color: white;
+}
+
+.link-btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.link-btn-danger {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.link-btn-danger:hover {
+  background-color: #fef2f2;
+}
+
+:deep(.tiptap a) {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: text;
 }
 
 .editor-content {
