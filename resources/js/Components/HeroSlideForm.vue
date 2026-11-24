@@ -15,11 +15,19 @@
               {{ (form[field.key] || '').length }}/{{ field.max }}
             </span>
           </div>
-          <component
-            :is="field.multiline ? 'textarea' : 'input'"
+          <!-- Plain elements, not <component :is>: v-model on a dynamic component binds modelValue, not the native value -->
+          <textarea
+            v-if="field.multiline"
             :id="`hs-${field.key}`"
             v-model="form[field.key]"
-            :rows="field.multiline ? 3 : undefined"
+            rows="3"
+            :placeholder="field.placeholder"
+            :class="inputClass(field.key)"
+          />
+          <input
+            v-else
+            :id="`hs-${field.key}`"
+            v-model="form[field.key]"
             type="text"
             :placeholder="field.placeholder"
             :class="inputClass(field.key)"
