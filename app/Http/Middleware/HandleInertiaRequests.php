@@ -26,6 +26,22 @@ class HandleInertiaRequests extends Middleware
                 'phone' => config('campaign.contact_phone'),
                 'address' => config('campaign.address'),
             ],
+            // Upcoming election days for the countdowns; each one drops off once its day ends in Lagos
+            'elections' => fn () => collect(config('campaign.elections'))
+                ->filter(fn ($election) => filled($election['starts_at']))
+                ->map(function ($election) {
+                    $startsAt = \Illuminate\Support\Carbon::parse($election['starts_at'], 'Africa/Lagos');
+
+                    return [
+                        'key' => $election['key'],
+                        'label' => $election['label'],
+                        'starts_at' => $startsAt->toIso8601String(),
+                        'ends_at' => $startsAt->copy()->endOfDay()->toIso8601String(),
+                    ];
+                })
+                ->filter(fn ($election) => now()->lt($election['ends_at']))
+                ->sortBy('starts_at')
+                ->values(),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

@@ -37,6 +37,9 @@
       </div>
     </section>
 
+    <!-- Election day countdowns -->
+    <ElectionCountdown />
+
     <!-- About Section -->
     <section class="py-16 md:py-24 bg-white" aria-labelledby="about-heading">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -281,6 +284,7 @@ import {
   UserGroupIcon,
 } from '@heroicons/vue/24/outline'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import ElectionCountdown from '@/Components/ElectionCountdown.vue'
 import HeroSlider from '@/Components/HeroSlider.vue'
 import PlatformCard from '@/Components/PlatformCard.vue'
 import StatCard from '@/Components/StatCard.vue'
